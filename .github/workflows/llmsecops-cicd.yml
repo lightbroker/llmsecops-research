@@ -1,0 +1,39 @@
+name: REST Server
+
+on:
+  # push:
+  #   branches: [ "main" ]
+  # pull_request:
+  #   branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
+
+    - name: Set up git LFS
+      run: git lfs install
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12'
+
+    - name: Download Huggingface CLI
+      run: |
+        pip install huggingface-hub[cli]
+        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir .
+        pip install onnxruntime-genai
+        curl https://raw.githubusercontent.com/microsoft/onnxruntime-genai/main/examples/python/phi3-qa.py -o phi3-qa.py
+        python phi3-qa.py -m cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4 -e cpu -v
+
+    - name: Run REST API server
+      run: |
+        python ${{ github.workspace }}/tests/api/server.py &
+        
+    - name: Test API call
+      run: |
+        curl -i localhost:9999/hello
