@@ -22,13 +22,16 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Download Huggingface CLI
+    - name: Set up HuggingFace LLM
       run: |
         pip install huggingface-hub[cli]
         huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir .
         pip install onnxruntime-genai
-        curl https://raw.githubusercontent.com/microsoft/onnxruntime-genai/main/examples/python/phi3-qa.py -o phi3-qa.py
-        python phi3-qa.py -m cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4 -e cpu -v
+        # curl https://raw.githubusercontent.com/microsoft/onnxruntime-genai/main/examples/python/phi3-qa.py -o phi3-qa.py
+        python phi3_language_model.py -v \
+          --prompt 'Describe the principle of existence, from the first principles of philosophy.' \
+          -m cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4 \
+          -e cpu
 
     - name: Run REST API server
       run: |
@@ -36,4 +39,4 @@ jobs:
         
     - name: Test API call
       run: |
-        curl -i localhost:9999/hello
+        curl -i localhost:9999
