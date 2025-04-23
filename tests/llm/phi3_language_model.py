@@ -15,7 +15,7 @@ class Phi3LanguageModel:
         self.tokenizer_stream = self.tokenizer.create_stream()    
     
 
-    def get_response(self, args):
+    def get_response(self, prompt_input):
 
         search_options = { 'max_length': 2048 }
         params = og.GeneratorParams(self.model)
@@ -23,7 +23,6 @@ class Phi3LanguageModel:
         generator = og.Generator(self.model, params)
 
         # process prompt input and generate tokens
-        prompt_input = args.prompt
         chat_template = '<|user|>\n{input} <|end|>\n<|assistant|>'
         prompt = f'{chat_template.format(input=prompt_input)}'
         input_tokens = self.tokenizer.encode(prompt)
@@ -54,4 +53,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     model = Phi3LanguageModel(args.model_path)
-    model.get_response()
+    model.get_response(args.prompt)
