@@ -5,7 +5,6 @@ import json
 class PathDispatcher:
     def __init__(self):
         self.routes = {}
-        self.response_headers = [('Content-Type', 'application/json')]
 
 
     def __http_415_notsupported(self, env, start_response):
@@ -20,9 +19,15 @@ class PathDispatcher:
             request_body_size = 0
 
         request_body = env['wsgi.input'].read(request_body_size)
-        data = json.loads(request_body.decode('utf-8'))
-        start_response('200 OK', self.response_headers)
-        return [json.dumps({'received': data}).encode('utf-8')]
+        request_body = request_body.decode('utf-8')
+        
+        # for now, just reading request and echoing back in response
+        data = json.loads(request_body)
+        response_body = json.dumps(data).encode('utf-8')
+        
+        response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
+        start_response('200 OK', response_headers)    
+        return [response_body]
 
 
     def __call__(self, env, start_response):
