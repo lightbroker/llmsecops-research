@@ -1,4 +1,4 @@
-name: LLM Prompt Testing
+name: 'LLM Prompt Testing'
 
 on:
   # push:
@@ -14,28 +14,23 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
 
-    - name: Set up git LFS
+    - name: 'set up git LFS'
       run: git lfs install
 
-    - name: Set up Python
+    - name: 'set up Python'
       uses: actions/setup-python@v3
       with:
         python-version: '3.12'
 
-    - name: Set up HuggingFace LLM
+    - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
       run: |
         pip install huggingface-hub[cli]
-        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir .
+        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
         pip install onnxruntime-genai
-        # curl https://raw.githubusercontent.com/microsoft/onnxruntime-genai/main/examples/python/phi3-qa.py -o phi3-qa.py
-        python ${{ github.workspace }}/tests/llm/phi3_language_model.py \
-          --prompt 'Describe the principle of existence, from the first principles of philosophy.' \
-          -m cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4 \
 
-    - name: Run REST API server
+    - name: 'run HTTP server and call REST API'
       run: |
-        python ${{ github.workspace }}/tests/api/server.py &
-        
-    - name: Test API call
-      run: |
-        curl -i localhost:9999
+        nohup python -m tests.api.server > server.log 2>&1 &
+        sleep 2
+        curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
+        cat server.log

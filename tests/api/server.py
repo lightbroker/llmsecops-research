@@ -1,6 +1,6 @@
 import json
 
-from PathDispatcher import PathDispatcher
+from tests.api.controller import ApiController
 from wsgiref.simple_server import make_server
 
 
@@ -14,9 +14,8 @@ class RestApiServer:
 
     def listen(self):
         port = 9999
-        dispatcher = PathDispatcher()
-        dispatcher.register('POST', '/', self.post_response)
-        with make_server('', port, dispatcher) as wsgi_srv:
+        controller = ApiController()
+        with make_server('', port, controller) as wsgi_srv:
             print(f'listening on port {port}...')
             wsgi_srv.serve_forever()
 
