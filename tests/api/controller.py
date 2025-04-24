@@ -1,4 +1,5 @@
 import json
+import traceback
 
 from tests.llm.phi3_language_model import Phi3LanguageModel
 
@@ -53,7 +54,15 @@ class ApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
         except Exception as e:
-            response_body = e.msg.encode('utf-8')
-            response_headers = [('Content-Type', 'text/plain'), ('Content-Length', str(len(response_body)))]
-            start_response('500 Internal Server Error', response_headers)
-            return [response_body]
+            # response_body = e.msg.encode('utf-8')
+            # response_headers = [('Content-Type', 'text/plain'), ('Content-Length', str(len(response_body)))]
+            # start_response('500 Internal Server Error', response_headers)
+            # return [response_body]
+        
+            # Log to stdout so it shows in GitHub Actions
+            print("Exception occurred:")
+            traceback.print_exc()
+
+            # Return more detailed error response
+            start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
+            return [f"Internal Server Error:\n{e}\n".encode()]

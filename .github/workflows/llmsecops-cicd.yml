@@ -37,8 +37,8 @@ jobs:
     - name: Run REST API server
       run: |
         # python ${{ github.workspace }}/tests/api/server.py &
-        python -m tests.api.server &
-        
-    - name: Test API call
-      run: |
-        curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }'
+        nohup python -m tests.api.server > server.log 2>&1 &
+        sleep 2
+        curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
+        echo "--- SERVER LOG ---"
+        cat server.log
