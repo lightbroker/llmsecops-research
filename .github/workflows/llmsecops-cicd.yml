@@ -28,9 +28,14 @@ jobs:
         huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
         pip install onnxruntime-genai
 
+    - name: 'set up Garak'
+      run: |
+        pip install garak
+
     - name: 'run HTTP server and call REST API'
       run: |
         nohup python -m tests.api.server > server.log 2>&1 &
         sleep 2
         curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
         cat server.log
+        garak --list_probes
