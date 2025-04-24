@@ -1,16 +1,16 @@
 # TODO: business logic for REST API interaction w/ LLM via prompt input
 
-import onnxruntime_genai as og
 import argparse
+import onnxruntime_genai as og
+import os
 
-
-default_model_path = './cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4'
 
 class Phi3LanguageModel:
 
     def __init__(self, model_path=None):
         # configure ONNX runtime
-        model_path = default_model_path if model_path == None else model_path
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
         config = og.Config(model_path)
         config.clear_providers()
         self.model = og.Model(config)

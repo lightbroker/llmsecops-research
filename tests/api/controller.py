@@ -1,11 +1,6 @@
 import json
-import os
-import sys
 
-# Add the parent folder (or any relative path)
-sys.path.append(os.path.abspath('./../llm'))
-
-from phi3_language_model import Phi3LanguageModel
+from tests.llm.phi3_language_model import Phi3LanguageModel
 
 
 class ApiController:
