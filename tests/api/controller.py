@@ -26,10 +26,6 @@ class ApiController:
         request_body = env['wsgi.input'].read(request_body_size)
         request_json = json.loads(request_body.decode('utf-8'))
         prompt = request_json.get('prompt')
-        
-        # for now, just reading request and echoing back in response
-        # data = json.loads(prompt)
-        # response_body = json.dumps(data).encode('utf-8')
 
         data = self.get_service_response(prompt)
         response_body = json.dumps(data).encode('utf-8')
@@ -51,7 +47,13 @@ class ApiController:
         try:                
             handler = self.routes.get((method,path), self.__http_200_ok)
             return handler(env, start_response)
-        except json.JSONDecodeError:
-            start_response('400 Bad Request', self.response_headers)
-            return [json.dumps({'error': 'Invalid JSON'}).encode('utf-8')]
-
+        except json.JSONDecodeError as e:
+            response_body = e.msg.encode('utf-8')
+            response_headers = [('Content-Type', 'text/plain'), ('Content-Length', str(len(response_body)))]
+            start_response('400 Bad Request', response_headers)
+            return [response_body]
+        except Exception as e:
+            response_body = e.msg.encode('utf-8')
+            response_headers = [('Content-Type', 'text/plain'), ('Content-Length', str(len(response_body)))]
+            start_response('500 Internal Server Error', response_headers)
+            return [response_body]
