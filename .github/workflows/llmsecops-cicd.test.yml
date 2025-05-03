@@ -1,0 +1,33 @@
+name: 'LLM Prompt Testing (Garak test.Test probe)'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
+
+    # - name: 'set up git LFS'
+    #   run: git lfs install
+
+    - name: 'set up Python'
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12'
+
+    # - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
+    #   run: |
+    #     pip install huggingface-hub[cli]
+    #     huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
+    #     pip install onnxruntime-genai
+
+    - name: 'set up Garak'
+      run: |
+        pip install garak
+
+    - name: 'run HTTP server and call REST API'
+      run: |
+        garak -v --model_type test.Blank --probes test.Test
