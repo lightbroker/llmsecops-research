@@ -1,4 +1,4 @@
-name: 'LLM Prompt Testing (Garak test.Test probe)'
+name: 'LLM Prompt Testing (LangChain)'
 
 on:
   workflow_dispatch:
@@ -10,39 +10,21 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
 
-    # - name: 'set up git LFS'
-    #   run: git lfs install
+    - name: 'set up git LFS'
+      run: git lfs install
 
     - name: 'set up Python'
       uses: actions/setup-python@v3
       with:
         python-version: '3.12'
 
-    # - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
-    #   run: |
-    #     pip install huggingface-hub[cli]
-    #     huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
-    #     pip install onnxruntime-genai
-
-    - name: 'set up Garak'
+    - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
       run: |
-        pip install garak
+        mkdir ${{ github.workspace }}/tests/llm/phi3
+        pip install huggingface-hub[cli]
+        huggingface-cli download microsoft/Phi-3-mini-4k-instruct --local-dir ${{ github.workspace }}/tests/llm/phi3
 
-    - name: 'Garak test probe'
+    - name: 'test'
       run: |
-        python -m garak --model_type test.Blank --probes test.Test 
+        nohup python -m tests.llm.llm > server.log 2>&1 &
         
-
-    - name: 'display report'
-      run: |
-        ls /home/runner/.local/share/garak/garak_runs/ -al
-        echo
-        cat /home/runner/.local/share/garak/garak_runs/garak.*.jsonl
-        echo
-        echo
-        cat /home/runner/.local/share/garak/garak_runs/garak.*.html
-
-    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: 'garak_report'
-        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
