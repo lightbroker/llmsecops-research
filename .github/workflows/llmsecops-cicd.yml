@@ -39,12 +39,15 @@ jobs:
         curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
         echo
         
-        garak -v --model_type test.Blank --probes test.Test
-
         garak -v \
           --config ${{ github.workspace }}/tests/tools/garak.config.yml \
           --generator_option_file ${{ github.workspace }}/tests/tools/garak.rest.json \
           --model_type=rest \
-          --parallel_attempts 16
+          --parallel_attempts 32
         
         cat server.log
+
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: 'garak_report'
+        path: /home/runner/.local/share/garak/garak_runs/garak.*.html

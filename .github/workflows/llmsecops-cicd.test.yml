@@ -28,6 +28,21 @@ jobs:
       run: |
         pip install garak
 
-    - name: 'run HTTP server and call REST API'
+    - name: 'Garak test probe'
       run: |
-        garak -v --model_type test.Blank --probes test.Test
+        python -m garak --model_type test.Blank --probes test.Test 
+        
+
+    - name: 'display report'
+      run: |
+        ls /home/runner/.local/share/garak/garak_runs/ -al
+        echo
+        cat /home/runner/.local/share/garak/garak_runs/garak.*.jsonl
+        echo
+        echo
+        cat /home/runner/.local/share/garak/garak_runs/garak.*.html
+
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: 'garak_report'
+        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
