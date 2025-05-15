@@ -7,8 +7,8 @@ from typing import List
 import numpy as np
 
 # LangChain imports
-from langchain_community.llms import HuggingFacePipeline
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFacePipeline
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -160,7 +160,7 @@ def ask_rag(question: str):
     print(f"\nQuestion: {question}")
     
     # Get response from the chain
-    response = qa_chain({"query": question})
+    response = qa_chain.invoke({"query": question})
     
     # Print the answer
     print("\nAnswer:")
