@@ -8,36 +8,52 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+import os
+from langchain_community.llms import HuggingFacePipeline
+from optimum.onnxruntime import ORTModelForCausalLM
+from transformers import AutoTokenizer, pipeline
 
 
 class Llm:
 
     def __init__(self, model_path=None):
+
+        # Get path to the model directory using your specified structure
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(base_dir, "phi3")
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
-        model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_name_or_path=model_path,
-            device_map="cpu",  # Use available GPU
-            trust_remote_code=True,  # If model requires custom code
+        model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
+
+        # Load the tokenizer from local path
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+            trust_remote_code=True  # Important for some models with custom code
         )
 
-        # Create a pipeline
+        # Load the ONNX model with optimum from local path
+        model = ORTModelForCausalLM.from_pretrained(
+            model_path,
+            provider="CPUExecutionProvider",
+            trust_remote_code=True
+        )
+
+        # Create a text generation pipeline
         pipe = pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
             max_new_tokens=512,
             temperature=0.7,
+            top_p=0.9,
+            repetition_penalty=1.1,
+            do_sample=True
         )
 
-        # Create LangChain LLM
-        self.hf_model = HuggingFacePipeline(pipeline=pipe)
+        # Create the LangChain LLM
+        self.llm = HuggingFacePipeline(pipeline=pipe)
 
     def get_response(self, input):
         # Use the model
         print(f'End user prompt: {input}')
-        response = self.hf_model.invoke(input)
+        response = self.llm.invoke(input)
         print(response)
 
 if __name__ == "__main__":
