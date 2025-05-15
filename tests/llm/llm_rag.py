@@ -29,12 +29,16 @@ model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc
 print(f"Loading Phi-3 model from: {model_path}")
 
 # Load the tokenizer and model
-tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(
+    pretrained_model_name_or_path=model_path,
+    trust_remote_code=True
+)
 model = ORTModelForCausalLM.from_pretrained(
-    model_path,
+    model_id=model_path,
     provider="CPUExecutionProvider",
     trust_remote_code=True
 )
+model.name_or_path = model_path
 
 # Create the text generation pipeline
 pipe = pipeline(
