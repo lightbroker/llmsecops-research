@@ -17,7 +17,7 @@ class Llm:
         model_path = os.path.join(base_dir, "phi3")
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForCausalLM.from_pretrained(
-            model_id=model_path,
+            pretrained_model_name_or_path=model_path,
             device_map="cpu",  # Use available GPU
             trust_remote_code=True,  # If model requires custom code
         )
