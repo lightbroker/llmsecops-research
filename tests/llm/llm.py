@@ -1,7 +1,6 @@
 import argparse
 import os
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -37,10 +36,8 @@ class Llm:
 
     def get_response(self, input):
         # Use the model
-        print(input)
-        canned_input = "What is the capital of France?"
-        print(canned_input)
-        response = self.hf_model.invoke(canned_input)
+        print(f'End user prompt: {input}')
+        response = self.hf_model.invoke(input)
         print(response)
 
 if __name__ == "__main__":
