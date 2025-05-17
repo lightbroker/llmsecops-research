@@ -1,0 +1,52 @@
+name: 'LLM Prompt Testing (LLM with Security Assessment RAG)'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
+
+    - name: 'set up git LFS'
+      run: git lfs install
+
+    - name: 'set up Python'
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12'
+
+    - name: 'set up Python dependencies'
+      run: |
+        pip install -r ${{ github.workspace }}/requirements.txt  
+
+    - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
+      run: |
+        pip install huggingface-hub[cli]
+        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
+
+    - name: 'set up garak'
+      run: |
+        pip install garak
+
+    - name: 'run HTTP server and call REST API'
+      run: |
+        nohup python -m tests.api.server > server.log 2>&1 &
+        sleep 2
+        curl -X POST -i localhost:9999/api/conversations -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
+        echo
+        
+        garak -v \
+          --config ${{ github.workspace }}/tests/tools/garak.config.yml \
+          --generator_option_file ${{ github.workspace }}/tests/tools/garak.rest.llm-rag.json \
+          --model_type=rest \
+          --parallel_attempts 32
+        
+        cat server.log
+
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: 'garak_report'
+        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
