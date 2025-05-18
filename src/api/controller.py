@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, jsonify, request
+from waitress import serve
 from src.llm.llm import Phi3LanguageModel
 from src.llm.llm_rag import Phi3LanguageModelWithRag
 
@@ -20,4 +21,6 @@ if __name__ == '__main__':
     logger = logging.Logger(name='Flask API', level=logging.DEBUG)
     print('test')
     logger.debug('running...')
-    app.run(debug=True, port=9998)
+    
+    # Production mode with Waitress:
+    serve(app, host='0.0.0.0', port=9998)

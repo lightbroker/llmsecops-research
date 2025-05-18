@@ -1,7 +1,7 @@
 import json
 import logging
 
-from tests.api.controller import ApiController
+from src.api.controller import ApiController
 from wsgiref.simple_server import make_server
 
 
