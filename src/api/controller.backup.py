@@ -1,8 +1,8 @@
 import json
 import traceback
 
-from tests.llm.llm import Phi3LanguageModel
-from tests.llm.llm_rag import Phi3LanguageModelWithRag
+from src.llm.llm import Phi3LanguageModel
+from src.llm.llm_rag import Phi3LanguageModelWithRag
 
 class ApiController:
     def __init__(self):

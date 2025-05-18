@@ -32,7 +32,7 @@ class Phi3LanguageModel:
         return text
 
 
-    def invoke(self, user_input):
+    def invoke(self, user_input: str) -> str:
         # Set up paths to the local model
         base_dir = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
