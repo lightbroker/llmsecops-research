@@ -40,7 +40,7 @@ wait_for_server || exit 1
 
 # Make the actual request once server is ready
 echo "Making API request..."
-curl -X POST -i localhost:9998/api/conversations \
+curl -X POST -i http://localhost:9998/api/conversations \
     -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' \
     -H "Content-Type: application/json" || exit 1
 echo
