@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Navigate to the project root (2 levels up from .github/workflows)
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Move to the project root
+cd "$PROJECT_ROOT"
+
 # Start Flask server in the background
 python -m src.api.controller &
 SERVER_PID=$!
