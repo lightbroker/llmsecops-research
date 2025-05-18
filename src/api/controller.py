@@ -5,6 +5,10 @@ from src.llm.llm_rag import Phi3LanguageModelWithRag
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return "Server is running", 200
+
 @app.route('/api/conversations', methods=['POST'])
 def get_llm_response():
     prompt = request.json['prompt']
