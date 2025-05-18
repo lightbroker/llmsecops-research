@@ -7,7 +7,7 @@ SERVER_PID=$!
 # Function to check if server is up
 wait_for_server() {
     echo "Waiting for Flask server to start..."
-    local max_attempts=30
+    local max_attempts=100
     local attempt=0
     
     while [ $attempt -lt $max_attempts ]; do
