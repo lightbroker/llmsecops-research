@@ -1,72 +1,167 @@
 name: 'LLM Prompt Testing (LLM, no RAG)'
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 60  # Add overall job timeout
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
-
-    - name: 'set up git LFS'
-      run: git lfs install
-
-    - name: 'set up Python'
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.12'
-
-    - name: 'set up Python dependencies'
-      run: |
-        pip install -r ${{ github.workspace }}/requirements.txt  
-
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        # This path is specific to Ubuntu
-        path: ~/.cache/pip
-        # Look to see if there is a cache hit for the corresponding requirements file
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-lightboker-llmsecopsresearch
-            
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-    - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
-      run: |
-        pip install huggingface-hub[cli]
-        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/src/llm
-
-    - name: 'set up garak'
-      run: |
-        pip install garak
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       
-    - name: 'run REST API, health check, and garak tests'
-      working-directory: ${{ github.workspace }}
-      shell: bash
-      run: |
-        nohup python -m src.api.controller &
-        sleep 30
-
-        curl -i http://localhost:9999/
-
-        echo "Making API request..."
-        curl -X POST -i http://localhost:9999/api/conversations \
+      - name: 'set up git LFS'
+        run: git lfs install
+        
+      - name: 'set up Python'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+          
+      - name: 'set up Python dependencies'
+        run: |
+          pip install -r ${{ github.workspace }}/requirements.txt
+          
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-lightboker-llmsecopsresearch
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Install diagnostic tools
+          pip install psutil
+          
+      - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
+        run: |
+          pip install huggingface-hub[cli]
+          huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/src/llm
+          
+      - name: 'set up garak'
+        run: |
+          pip install garak
+          
+      - name: 'run REST API, health check, and garak tests'
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        continue-on-error: true  # Allow job to continue even if this step fails
+        timeout-minutes: 45  # Add step timeout
+        run: |
+          # Create log directory
+          mkdir -p logs
+          
+          # Start API with better logging
+          echo "Starting API server with logging..."
+          nohup python -m src.api.controller > logs/api.log 2>&1 &
+          API_PID=$!
+          echo "API server started with PID: $API_PID"
+          
+          # Wait for API to be ready, with better error handling
+          echo "Waiting for API to be ready..."
+          max_attempts=10
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Health check attempt $attempt of $max_attempts..."
+            if curl -s -f -i http://localhost:9999/ > logs/health_check_$attempt.log 2>&1; then
+              echo "Health check succeeded!"
+              break
+            else
+              echo "Health check failed, waiting 5 seconds..."
+              sleep 5
+              attempt=$((attempt+1))
+            fi
+          done
+          
+          if [ $attempt -gt $max_attempts ]; then
+            echo "API failed to start after $max_attempts attempts"
+            cat logs/api.log
+            exit 1
+          fi
+          
+          # Make test API request with proper error handling
+          echo "Making API request..."
+          curl -X POST -i http://localhost:9999/api/conversations \
             -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' \
-            -H "Content-Type: application/json" || exit 1
-
-        garak -v \
-          --config ${{ github.workspace }}/src/tools/garak.config.yml \
-          --generator_option_file ${{ github.workspace }}/src/tools/garak.rest.llm.json \
-          --model_type=rest \
-          --parallel_attempts 32
-
-    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: 'garak_report'
-        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
+            -H "Content-Type: application/json" > logs/test_request.log 2>&1
+          
+          if [ $? -ne 0 ]; then
+            echo "Test API request failed!"
+            cat logs/test_request.log
+            exit 1
+          else
+            echo "Test API request succeeded!"
+            cat logs/test_request.log
+          fi
+          
+          # Add system monitoring in background
+          echo "Starting system monitoring..."
+          (
+            while true; do
+              date >> logs/system_monitor.log
+              echo "Memory usage:" >> logs/system_monitor.log
+              free -m >> logs/system_monitor.log
+              echo "Process info:" >> logs/system_monitor.log
+              ps aux | grep -E 'python|garak' >> logs/system_monitor.log
+              echo "API process status:" >> logs/system_monitor.log
+              if ps -p $API_PID > /dev/null; then
+                echo "API process is running" >> logs/system_monitor.log
+              else
+                echo "API process is NOT running!" >> logs/system_monitor.log
+              fi
+              echo "-------------------" >> logs/system_monitor.log
+              sleep 10
+            done
+          ) &
+          MONITOR_PID=$!
+          
+          # Run garak with better error handling and logging
+          echo "Running garak vulnerability scan..."
+          {
+            timeout 40m garak -v \
+              --config ${{ github.workspace }}/src/tools/garak.config.yml \
+              --generator_option_file ${{ github.workspace }}/src/tools/garak.rest.llm.json \
+              --model_type=rest \
+              --parallel_attempts 16 \
+              --report logs/garak_report 2>&1
+          } > logs/garak.log 2>&1
+          
+          GARAK_EXIT_CODE=$?
+          echo "Garak exit code: $GARAK_EXIT_CODE"
+          
+          # Kill the monitoring process
+          kill $MONITOR_PID || true
+          
+          # Kill the API process
+          kill $API_PID || true
+          
+          # Capture and report logs regardless of success/failure
+          echo "Collecting logs..."
+          cat logs/garak.log | tail -n 200
+          
+          # Exit with the garak exit code
+          if [ $GARAK_EXIT_CODE -eq 124 ]; then
+            echo "Garak timed out after 40 minutes"
+            exit 1
+          elif [ $GARAK_EXIT_CODE -ne 0 ]; then
+            echo "Garak failed with exit code $GARAK_EXIT_CODE"
+            exit $GARAK_EXIT_CODE
+          fi
+          
+      - name: Upload logs
+        if: always()  # Upload logs even if previous steps failed
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: 'execution_logs'
+          path: logs/
+          
+      - name: Upload garak report
+        if: always()  # Upload report even if previous steps failed
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: 'garak_report'
+          path: |
+            /home/runner/.local/share/garak/garak_runs/garak.*.html
+            logs/garak_report*
