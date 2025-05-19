@@ -41,12 +41,14 @@ class Phi3LanguageModel:
         # Load the tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=model_path,
-            trust_remote_code=True
+            trust_remote_code=True,
+            local_files_only=True  # Add this line
         )
         model = ORTModelForCausalLM.from_pretrained(
-            model_id=model_path,
+            model_path,  # Change model_id to just model_path
             provider="CPUExecutionProvider",
-            trust_remote_code=True
+            trust_remote_code=True,
+            local_files_only=True  # Add this line
         )
         model.name_or_path = model_path
 
