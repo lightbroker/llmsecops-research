@@ -21,6 +21,6 @@ if __name__ == '__main__':
     logger = logging.Logger(name='Flask API', level=logging.DEBUG)
     print('test')
     logger.debug('running...')
-    
+
     # Production mode with Waitress:
-    serve(app, host='0.0.0.0', port=9998)
+    serve(app, host='0.0.0.0', port=9999)
