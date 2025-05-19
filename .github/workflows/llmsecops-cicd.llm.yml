@@ -105,8 +105,6 @@ jobs:
               free -m >> logs/system_monitor.log
               echo "Process info:" >> logs/system_monitor.log
               ps aux | grep -E 'python|garak' >> logs/system_monitor.log
-              echo "Network connections:" >> logs/system_monitor.log
-              netstat -tulpn | grep python >> logs/system_monitor.log 2>/dev/null || echo "No network connections found" >> logs/system_monitor.log
               echo "API process status:" >> logs/system_monitor.log
               if ps -p $API_PID > /dev/null; then
                 echo "API process is running" >> logs/system_monitor.log
@@ -119,34 +117,19 @@ jobs:
           ) &
           MONITOR_PID=$!
           
-          # Make sure garak report directory exists
-          GARAK_REPORTS_DIR="/home/runner/.local/share/garak/garak_runs"
-          mkdir -p $GARAK_REPORTS_DIR
-          
           # Run garak with better error handling and logging
           echo "Running garak vulnerability scan..."
           {
-            set -x  # Enable debug mode to print commands
-            # Run garak without the --report flag (it will create its own reports by default)
             timeout 40m garak -v \
               --config ${{ github.workspace }}/src/tools/garak.config.yml \
               --generator_option_file ${{ github.workspace }}/src/tools/garak.rest.llm.json \
               --model_type=rest \
-              --parallel_attempts 16
-            set +x  # Disable debug mode
+              --parallel_attempts 16 \
+              --report logs/garak_report 2>&1
           } > logs/garak.log 2>&1
           
           GARAK_EXIT_CODE=$?
           echo "Garak exit code: $GARAK_EXIT_CODE"
-          
-          # Copy any garak reports to our logs directory for easier access
-          echo "Copying garak reports to logs directory..."
-          mkdir -p logs/garak_reports
-          cp -r $GARAK_REPORTS_DIR/* logs/garak_reports/ || echo "No garak reports found to copy"
-          
-          # List what reports were generated
-          echo "Garak reports found:"
-          find logs/garak_reports -type f | sort
           
           # Kill the monitoring process
           kill $MONITOR_PID || true
@@ -155,14 +138,8 @@ jobs:
           kill $API_PID || true
           
           # Capture and report logs regardless of success/failure
-          echo "Last 200 lines of garak log:"
+          echo "Collecting logs..."
           cat logs/garak.log | tail -n 200
-          
-          # Check for "operation was canceled" error specifically
-          if grep -q "operation was canceled" logs/garak.log; then
-            echo "FOUND 'operation was canceled' error in logs:"
-            grep -A 10 -B 10 "operation was canceled" logs/garak.log
-          fi
           
           # Exit with the garak exit code
           if [ $GARAK_EXIT_CODE -eq 124 ]; then
@@ -186,5 +163,5 @@ jobs:
         with:
           name: 'garak_report'
           path: |
-            /home/runner/.local/share/garak/garak_runs/
-            logs/garak_reports/
+            /home/runner/.local/share/garak/garak_runs/garak.*.html
+            logs/garak_report*
