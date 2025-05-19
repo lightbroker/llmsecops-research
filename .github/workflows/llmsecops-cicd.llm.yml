@@ -22,22 +22,22 @@ jobs:
       run: |
         pip install -r ${{ github.workspace }}/requirements.txt  
 
+    - name: 'run HTTP server'
+      working-directory: ${{ github.workspace }}/.github/workflows
+      shell: bash
+      run: |
+        python -m src.api.controller &
+
     - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
       run: |
         pip install huggingface-hub[cli]
         huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
 
-    - name: 'run HTTP server and test REST API'
-      working-directory: ${{ github.workspace }}/.github/workflows
-      shell: bash
-      run: |
-        python -m src.api.controller &
-        
     - name: 'set up garak'
       run: |
         pip install garak
       
-    - name: 'run garak tests'
+    - name: 'run REST API health check and garak tests'
       working-directory: ${{ github.workspace }}/src/tools
       shell: bash
       run: |
