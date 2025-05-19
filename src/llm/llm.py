@@ -38,35 +38,17 @@ class Phi3LanguageModel:
         model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
         print(f"Loading Phi-3 model from: {model_path}")
 
-        # List and print the contents of the model_path directory
-        print(f"Listing contents of model directory: {model_path}")
-        try:
-            files = os.listdir(model_path)
-            for i, file in enumerate(files):
-                file_path = os.path.join(model_path, file)
-                file_size = os.path.getsize(file_path)
-                is_dir = os.path.isdir(file_path)
-                file_type = "dir" if is_dir else "file"
-                print(f"{i+1:2d}. {file:50s} [{file_type}] {file_size:,} bytes")
-            print(f"Total: {len(files)} items found")
-        except FileNotFoundError:
-            print(f"ERROR: Directory {model_path} not found!")
-        except PermissionError:
-            print(f"ERROR: Permission denied when accessing {model_path}")
-        except Exception as e:
-            print(f"ERROR: Unexpected error when listing directory: {str(e)}")
-
         # Load the tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=model_path,
             trust_remote_code=True,
-            local_files_only=True  # Add this line
+            local_files_only=True
         )
         model = ORTModelForCausalLM.from_pretrained(
             model_path,  # Change model_id to just model_path
             provider="CPUExecutionProvider",
             trust_remote_code=True,
-            local_files_only=True  # Add this line
+            local_files_only=True
         )
         model.name_or_path = model_path
 
@@ -105,9 +87,10 @@ class Phi3LanguageModel:
         
         try:
             # Get response from the chain
+            print(f'===Prompt: {user_input}\n\n')
             response = chain.invoke(user_input)
             # Print the answer
-            print(response)
+            print(f'===Response: {response}\n\n')
             return response
         except Exception as e:
             print(f"Failed: {e}")
