@@ -22,12 +22,6 @@ jobs:
       run: |
         pip install -r ${{ github.workspace }}/requirements.txt  
 
-    - name: 'run HTTP server'
-      working-directory: ${{ github.workspace }}
-      shell: bash
-      run: |
-        nohup python -m src.api.controller &
-
     - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
       run: |
         pip install huggingface-hub[cli]
@@ -37,10 +31,13 @@ jobs:
       run: |
         pip install garak
       
-    - name: 'run REST API health check and garak tests'
+    - name: 'run REST API, health check, and garak tests'
       working-directory: ${{ github.workspace }}
       shell: bash
       run: |
+        nohup python -m src.api.controller &
+        wait
+
         curl -i http://localhost:9999/
 
         echo "Making API request..."
