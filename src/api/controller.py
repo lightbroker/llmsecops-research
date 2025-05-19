@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def health_check():
-    return "Server is running", 200
+    return f"Server is running\n", 200
 
 @app.route('/api/conversations', methods=['POST'])
 def get_llm_response():
@@ -22,5 +22,5 @@ if __name__ == '__main__':
     print('test')
     logger.debug('running...')
 
-    # Production mode with Waitress:
+    # TODO set up port # as env var
     serve(app, host='0.0.0.0', port=9999)

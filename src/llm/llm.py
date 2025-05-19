@@ -91,4 +91,5 @@ class Phi3LanguageModel:
             return response
         except Exception as e:
             print(f"Failed: {e}")
+            return e
         
