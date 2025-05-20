@@ -43,111 +43,80 @@ jobs:
       - name: 'set up garak'
         run: |
           pip install garak
+      
+      # Split into separate scripts for cleaner workflow
+      - name: 'Prepare test environment'
+        run: |
+          mkdir -p logs
+          chmod +x ${{ github.workspace }}/.github/scripts/*.sh
           
-      - name: 'run REST API, health check, and garak tests'
-        working-directory: ${{ github.workspace }}
-        shell: bash
+      - name: 'Start API server'
+        run: ${{ github.workspace }}/.github/scripts/start_api.sh
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          
+      - name: 'Run health check'
+        run: ${{ github.workspace }}/.github/scripts/health_check.sh
+        
+      - name: 'Run test API request'
+        run: ${{ github.workspace }}/.github/scripts/test_api.sh
+        
+      - name: 'Start system monitoring'
+        run: ${{ github.workspace }}/.github/scripts/start_monitoring.sh &
+        env:
+          MONITOR_PID_FILE: ${{ github.workspace }}/monitor_pid.txt
+          
+      - name: 'Run garak vulnerability scan'
         continue-on-error: true  # Allow job to continue even if this step fails
         timeout-minutes: 45  # Add step timeout
+        run: ${{ github.workspace }}/.github/scripts/run_garak.sh
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          GITHUB_ENV: $GITHUB_ENV
+          
+      # Add error analysis step
+      - name: 'Analyze errors and create report'
+        if: always()  # Run this step even if previous steps failed
         run: |
-          # Create log directory
-          mkdir -p logs
+          echo "### Garak Execution Summary" > $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Start API with better logging
-          echo "Starting API server with logging..."
-          nohup python -m src.api.controller > logs/api.log 2>&1 &
-          API_PID=$!
-          echo "API server started with PID: $API_PID"
-          
-          # Wait for API to be ready, with better error handling
-          echo "Waiting for API to be ready..."
-          max_attempts=10
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            echo "Health check attempt $attempt of $max_attempts..."
-            if curl -s -f -i http://localhost:9999/ > logs/health_check_$attempt.log 2>&1; then
-              echo "Health check succeeded"
-              break
-            else
-              echo "Health check failed, waiting 5 seconds..."
-              sleep 5
-              attempt=$((attempt+1))
-            fi
-          done
-          
-          if [ $attempt -gt $max_attempts ]; then
-            echo "API failed to start after $max_attempts attempts"
-            cat logs/api.log
-            exit 1
+          if [ -f "logs/exit_code_analysis.log" ]; then
+            echo "#### Exit Code Analysis" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat logs/exit_code_analysis.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
           fi
           
-          # Make test API request with proper error handling
-          echo "Making API request..."
-          curl -X POST -i http://localhost:9999/api/conversations \
-            -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' \
-            -H "Content-Type: application/json" > logs/test_request.log 2>&1
-          
-          if [ $? -ne 0 ]; then
-            echo "Test API request failed"
-            cat logs/test_request.log
-            exit 1
-          else
-            echo "Test API request succeeded"
-            cat logs/test_request.log
+          if [ -f "logs/error_analysis.log" ]; then
+            echo "#### Error Patterns Found" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat logs/error_analysis.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
           fi
           
-          # Add system monitoring in background
-          echo "Starting system monitoring..."
-          (
-            while true; do
-              date >> logs/system_monitor.log
-              echo "Memory usage:" >> logs/system_monitor.log
-              free -m >> logs/system_monitor.log
-              echo "Process info:" >> logs/system_monitor.log
-              ps aux | grep -E 'python|garak' >> logs/system_monitor.log
-              echo "API process status:" >> logs/system_monitor.log
-              if ps -p $API_PID > /dev/null; then
-                echo "API process is running" >> logs/system_monitor.log
-              else
-                echo "API process is NOT running" >> logs/system_monitor.log
-              fi
-              echo "-------------------" >> logs/system_monitor.log
-              sleep 10
-            done
-          ) &
-          MONITOR_PID=$!
-          
-          # Run garak with better error handling and logging
-          echo "Running garak vulnerability scan..."
-          {
-            timeout 40m garak -v \
-              --config ${{ github.workspace }}/src/tools/garak.config.yml \
-              --generator_option_file ${{ github.workspace }}/src/tools/garak.rest.llm.json \
-              --model_type=rest \
-              --parallel_attempts 16
-          } > logs/garak.log 2>&1
-          
-          GARAK_EXIT_CODE=$?
-          echo "Garak exit code: $GARAK_EXIT_CODE"
-          
-          # Kill the monitoring process
-          kill $MONITOR_PID || true
-          
-          # Kill the API process
-          kill $API_PID || true
-          
-          # Capture and report logs regardless of success/failure
-          echo "Collecting logs..."
-          cat logs/garak.log | tail -n 200
-          
-          # Exit with the garak exit code
-          if [ $GARAK_EXIT_CODE -eq 124 ]; then
-            echo "Garak timed out after 40 minutes"
-            exit 1
-          elif [ $GARAK_EXIT_CODE -ne 0 ]; then
-            echo "Garak failed with exit code $GARAK_EXIT_CODE"
-            exit $GARAK_EXIT_CODE
+          echo "#### System Resources" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f "logs/system_before_garak.log" ]; then
+            echo "BEFORE GARAK:" >> $GITHUB_STEP_SUMMARY
+            cat logs/system_before_garak.log >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
           fi
+          
+          if [ -f "logs/system_after_garak.log" ]; then
+            echo "AFTER GARAK:" >> $GITHUB_STEP_SUMMARY
+            cat logs/system_after_garak.log >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+      - name: 'Stop monitoring and API processes'
+        if: always()  # Run this step even if previous steps failed
+        run: ${{ github.workspace }}/.github/scripts/cleanup.sh
+        env:
+          MONITOR_PID_FILE: ${{ github.workspace }}/monitor_pid.txt
+          API_PID_FILE: ${{ github.workspace }}/api_pid.txt
           
       - name: Upload logs
         if: always()  # Upload logs even if previous steps failed
@@ -162,5 +131,5 @@ jobs:
         with:
           name: 'garak_report'
           path: |
-            /home/runner/.local/share/garak/garak_runs/garak.*.html
-            logs/garak_report*
+            /home/runner/.local/share/garak/garak_runs/
+            logs/garak_reports/
