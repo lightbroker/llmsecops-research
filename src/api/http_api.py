@@ -9,14 +9,13 @@ app = FastAPI(
     description='HTTP API for interacting with Phi-3 Mini 4K language model'
 )
 
-class Prompt(BaseModel):
+class LanguageModelPrompt(BaseModel):
     prompt: str
 
-class Response(BaseModel):
+class LanguageModelResponse(BaseModel):
     response: str
 
 
-@app.get('/', response_model=Response)
+@app.get('/', response_model=str)
 async def health_check():
-    return ({ 'response': 'success' })
-
+    return 'success'
