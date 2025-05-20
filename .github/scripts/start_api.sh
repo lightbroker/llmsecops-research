@@ -7,7 +7,7 @@ echo "Starting API server with logging..."
 
 nohup uvicorn src.api.http_api:app \
     --host 0.0.0.0 --port 9999 \
-    --workers 4 --loop uvloop \
+    --workers 2 --loop uvloop \
     --http httptools --no-use-colors > logs/api.log 2>&1 &
 
 API_PID=$!
