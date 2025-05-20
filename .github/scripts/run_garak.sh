@@ -1,6 +1,8 @@
 #!/bin/bash
 # Don't use set -e here as we want to capture and handle errors ourselves
 
+cd $GITHUB_WORKSPACE
+
 # Make sure garak report directory exists
 GARAK_REPORTS_DIR="/home/runner/.local/share/garak/garak_runs"
 mkdir -p $GARAK_REPORTS_DIR

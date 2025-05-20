@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e  # Exit on error
 
+cd $GITHUB_WORKSPACE
+
 echo "Starting API server with logging..."
 nohup python -m src.api.server > logs/api.log 2>&1 &
 API_PID=$!

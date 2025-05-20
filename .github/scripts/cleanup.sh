@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $GITHUB_WORKSPACE
+
 echo "Cleaning up processes..."
 
 # Kill the monitoring process if it exists

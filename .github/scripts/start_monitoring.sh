@@ -2,6 +2,8 @@
 
 echo "Starting system monitoring..."
 
+cd $GITHUB_WORKSPACE
+
 # Read API PID from file
 API_PID=$(cat api_pid.txt)
 echo "Monitoring API process with PID: $API_PID"
