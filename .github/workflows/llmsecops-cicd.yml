@@ -1,10 +1,6 @@
-name: 'LLM Prompt Testing'
+name: 'LLM Prompt Testing (WSGI)'
 
 on:
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -22,11 +18,16 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: 'set up Python dependencies'
+      run: |
+        pip install -r ${{ github.workspace }}/requirements.txt  
+
     - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
       run: |
         pip install huggingface-hub[cli]
-        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
-        pip install onnxruntime-genai
+        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx \
+          --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* \
+          --local-dir ${{ github.workspace }}/src/llm
 
     - name: 'set up Garak'
       run: |
@@ -34,20 +35,20 @@ jobs:
 
     - name: 'run HTTP server and call REST API'
       run: |
-        nohup python -m tests.api.server > server.log 2>&1 &
-        sleep 2
+        nohup python -m src.api.server > server.log 2>&1 &
+        sleep 5
         curl -X POST -i localhost:9999 -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
         echo
         
         garak -v \
-          --config ${{ github.workspace }}/tests/tools/garak.config.yml \
-          --generator_option_file ${{ github.workspace }}/tests/tools/garak.rest.json \
+          --config ${{ github.workspace }}/src/tools/garak.config.yml \
+          --generator_option_file ${{ github.workspace }}/src/tools/garak.rest.json \
           --model_type=rest \
-          --parallel_attempts 32
+          --parallel_attempts 16
         
         cat server.log
 
-    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: 'garak_report'
-        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
+    # - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+    #   with:
+    #     name: 'garak_report'
+    #     path: /home/runner/.local/share/garak/garak_runs/garak.*.html
