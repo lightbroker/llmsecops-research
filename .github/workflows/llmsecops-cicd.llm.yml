@@ -1,52 +1,135 @@
 name: 'LLM Prompt Testing (LLM, no RAG)'
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 60  # Add overall job timeout
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683    
-
-    - name: 'set up git LFS'
-      run: git lfs install
-
-    - name: 'set up Python'
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.12'
-
-    - name: 'set up Python dependencies'
-      run: |
-        pip install -r ${{ github.workspace }}/requirements.txt  
-
-    - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
-      run: |
-        pip install huggingface-hub[cli]
-        huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/tests/llm
-
-    - name: 'set up garak'
-      run: |
-        pip install garak
-
-    - name: 'run HTTP server and call REST API'
-      run: |
-        nohup python -m tests.api.server > server.log 2>&1 &
-        sleep 2
-        curl -X POST -i localhost:9999/api/conversations -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' || true
-        echo
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      
+      - name: 'set up git LFS'
+        run: git lfs install
         
-        garak -v \
-          --config ${{ github.workspace }}/tests/tools/garak.config.yml \
-          --generator_option_file ${{ github.workspace }}/tests/tools/garak.rest.llm.json \
-          --model_type=rest \
-          --parallel_attempts 32
+      - name: 'set up Python'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+          
+      - name: 'set up Python dependencies'
+        run: |
+          pip install -r ${{ github.workspace }}/requirements.txt
+          
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-lightboker-llmsecopsresearch
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Install diagnostic tools
+          pip install psutil
+          
+      - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
+        run: |
+          pip install huggingface-hub[cli]
+          huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/src/llm
+          
+      - name: 'set up garak'
+        run: |
+          pip install garak
+      
+      # Split into separate scripts for cleaner workflow
+      - name: 'Prepare test environment'
+        run: |
+          mkdir -p logs
+          chmod +x ${{ github.workspace }}/.github/scripts/*.sh
+          
+      - name: 'Start API server'
+        run: ${{ github.workspace }}/.github/scripts/start_api.sh
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          
+      - name: 'Run health check'
+        run: ${{ github.workspace }}/.github/scripts/health_check.sh
         
-        cat server.log
-
-    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: 'garak_report'
-        path: /home/runner/.local/share/garak/garak_runs/garak.*.html
+      - name: 'Run test API request'
+        run: ${{ github.workspace }}/.github/scripts/test_api.sh
+        
+      - name: 'Start system monitoring'
+        run: ${{ github.workspace }}/.github/scripts/start_monitoring.sh &
+        env:
+          MONITOR_PID_FILE: ${{ github.workspace }}/monitor_pid.txt
+          
+      - name: 'Run garak vulnerability scan'
+        continue-on-error: true  # Allow job to continue even if this step fails
+        timeout-minutes: 45  # Add step timeout
+        run: ${{ github.workspace }}/.github/scripts/run_garak.sh
+        env:
+          WORKSPACE: ${{ github.workspace }}
+          GITHUB_ENV: $GITHUB_ENV
+          
+      # Add error analysis step
+      - name: 'Analyze errors and create report'
+        if: always()  # Run this step even if previous steps failed
+        run: |
+          echo "### Garak Execution Summary" > $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "logs/exit_code_analysis.log" ]; then
+            echo "#### Exit Code Analysis" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat logs/exit_code_analysis.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "logs/error_analysis.log" ]; then
+            echo "#### Error Patterns Found" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat logs/error_analysis.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "#### System Resources" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f "logs/system_before_garak.log" ]; then
+            echo "BEFORE GARAK:" >> $GITHUB_STEP_SUMMARY
+            cat logs/system_before_garak.log >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "logs/system_after_garak.log" ]; then
+            echo "AFTER GARAK:" >> $GITHUB_STEP_SUMMARY
+            cat logs/system_after_garak.log >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+      - name: 'Stop monitoring and API processes'
+        if: always()  # Run this step even if previous steps failed
+        run: ${{ github.workspace }}/.github/scripts/cleanup.sh
+        env:
+          MONITOR_PID_FILE: ${{ github.workspace }}/monitor_pid.txt
+          API_PID_FILE: ${{ github.workspace }}/api_pid.txt
+          
+      - name: Upload logs
+        if: always()  # Upload logs even if previous steps failed
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: 'execution_logs'
+          path: logs/
+          
+      - name: Upload garak report
+        if: always()  # Upload report even if previous steps failed
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: 'garak_report'
+          path: |
+            /home/runner/.local/share/garak/garak_runs/
+            logs/garak_reports/

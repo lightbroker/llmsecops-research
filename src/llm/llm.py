@@ -2,7 +2,9 @@
 RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
 """
 
+import logging
 import os
+import sys
 from typing import List
 
 # LangChain imports
@@ -26,27 +28,36 @@ from transformers import AutoTokenizer, pipeline
 
 class Phi3LanguageModel:
 
+    def __init__(self):
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler(sys.stdout)
+        logger.addHandler(handler)
+        self.logger = logger
+
     def extract_assistant_response(self, text):
         if "<|assistant|>" in text:
             return text.split("<|assistant|>")[-1].strip()
         return text
 
 
-    def invoke(self, user_input):
+    def invoke(self, user_input: str) -> str:
         # Set up paths to the local model
         base_dir = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
-        print(f"Loading Phi-3 model from: {model_path}")
+        self.logger.debug(f"Loading Phi-3 model from: {model_path}")
 
         # Load the tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=model_path,
-            trust_remote_code=True
+            trust_remote_code=True,
+            local_files_only=True
         )
         model = ORTModelForCausalLM.from_pretrained(
-            model_id=model_path,
+            model_path,  # Change model_id to just model_path
             provider="CPUExecutionProvider",
-            trust_remote_code=True
+            trust_remote_code=True,
+            local_files_only=True
         )
         model.name_or_path = model_path
 
@@ -85,10 +96,12 @@ class Phi3LanguageModel:
         
         try:
             # Get response from the chain
+            self.logger.debug(f'===Prompt: {user_input}\n\n')
             response = chain.invoke(user_input)
             # Print the answer
-            print(response)
+            self.logger.debug(f'===Response: {response}\n\n')
             return response
         except Exception as e:
-            print(f"Failed: {e}")
+            self.logger.error(f"Failed: {e}")
+            return e
         
