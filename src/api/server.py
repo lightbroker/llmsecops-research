@@ -1,6 +1,7 @@
 import json
+import logging
 
-from tests.api.controller import ApiController
+from src.api.controller import ApiController
 from wsgiref.simple_server import make_server
 
 
@@ -13,11 +14,14 @@ class RestApiServer:
         yield [json.dumps({'received': 'data'}).encode('utf-8')]
 
     def listen(self):
-        port = 9999
-        controller = ApiController()
-        with make_server('', port, controller) as wsgi_srv:
-            print(f'listening on port {port}...')
-            wsgi_srv.serve_forever()
+        try:
+            port = 9999
+            controller = ApiController()
+            with make_server('', port, controller) as wsgi_srv:
+                print(f'listening on port {port}...')
+                wsgi_srv.serve_forever()
+        except Exception as e:
+            logging.warning(e)
 
 
 if __name__ == '__main__':
