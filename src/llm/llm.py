@@ -5,16 +5,10 @@ RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
 import logging
 import os
 import sys
-from typing import List
 
 # LangChain imports
 from langchain_huggingface import HuggingFacePipeline
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain.schema import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
