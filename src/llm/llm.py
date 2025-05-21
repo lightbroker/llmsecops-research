@@ -47,7 +47,7 @@ class Phi3LanguageModel:
             local_files_only=True
         )
         model = ORTModelForCausalLM.from_pretrained(
-            model_path,  # Change model_id to just model_path
+            model_path, 
             provider="CPUExecutionProvider",
             trust_remote_code=True,
             local_files_only=True
@@ -59,7 +59,7 @@ class Phi3LanguageModel:
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            max_new_tokens=512,
+            max_new_tokens=256,
             temperature=0.7,
             top_p=0.9,
             repetition_penalty=1.1,
