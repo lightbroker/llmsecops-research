@@ -1,5 +1,7 @@
 import json
+import time
 import traceback
+
 
 from src.llm.llm import Phi3LanguageModel
 from src.llm.llm_rag import Phi3LanguageModelWithRag
@@ -9,6 +11,8 @@ class ApiController:
         self.routes = {}
         # Register routes
         self.register_routes()
+        self.llm_svc = Phi3LanguageModel() # TODO: rename this as a service
+        self.llm_rag_svc = Phi3LanguageModelWithRag()
 
     def register_routes(self):
         """Register all API routes"""
@@ -21,13 +25,11 @@ class ApiController:
         return [json.dumps({'error': 'Unsupported Content-Type'}).encode('utf-8')]
 
     def get_service_response(self, prompt):
-        service = Phi3LanguageModel()
-        response = service.invoke(user_input=prompt)
+        response = self.llm_svc.invoke(user_input=prompt)
         return response
     
     def get_service_response_with_rag(self, prompt):
-        service = Phi3LanguageModelWithRag()
-        response = service.invoke(user_input=prompt)
+        response = self.llm_rag_svc.invoke(user_input=prompt)
         return response
 
     def format_response(self, data):

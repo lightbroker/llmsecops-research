@@ -22,9 +22,6 @@ from langchain_core.runnables import RunnablePassthrough
 from optimum.onnxruntime import ORTModelForCausalLM
 from transformers import AutoTokenizer, pipeline
 
-# ------------------------------------------------------
-# 1. LOAD THE LOCAL PHI-3 MODEL
-# ------------------------------------------------------
 
 class Phi3LanguageModel:
 
@@ -34,14 +31,10 @@ class Phi3LanguageModel:
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
         self.logger = logger
+        self.configure_model()
 
-    def extract_assistant_response(self, text):
-        if "<|assistant|>" in text:
-            return text.split("<|assistant|>")[-1].strip()
-        return text
+    def configure_model(self):
 
-
-    def invoke(self, user_input: str) -> str:
         # Set up paths to the local model
         base_dir = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
@@ -70,6 +63,7 @@ class Phi3LanguageModel:
             temperature=0.7,
             top_p=0.9,
             repetition_penalty=1.1,
+            use_fast=True,
             do_sample=True
         )
 
@@ -86,18 +80,25 @@ class Phi3LanguageModel:
         prompt = PromptTemplate.from_template(template)
         
         # Create a chain using LCEL
-        chain = (
+        self.chain = (
             {"question": RunnablePassthrough()}
             | prompt
             | llm
             | StrOutputParser()
             | self.extract_assistant_response
         )
-        
+
+    def extract_assistant_response(self, text):
+        if "<|assistant|>" in text:
+            return text.split("<|assistant|>")[-1].strip()
+        return text
+
+
+    def invoke(self, user_input: str) -> str:
         try:
             # Get response from the chain
             self.logger.debug(f'===Prompt: {user_input}\n\n')
-            response = chain.invoke(user_input)
+            response = self.chain.invoke(user_input)
             # Print the answer
             self.logger.debug(f'===Response: {response}\n\n')
             return response
