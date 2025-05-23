@@ -1,11 +1,10 @@
 import json
 import traceback
 
+from src.text_generation.adapters.llm.llm import Phi3LanguageModel
+from src.text_generation.adapters.llm.llm_rag import Phi3LanguageModelWithRag
 
-from src.llm.llm import Phi3LanguageModel
-from src.llm.llm_rag import Phi3LanguageModelWithRag
-
-class ApiController:
+class HttpApiController:
     def __init__(self):
         self.routes = {}
         # Register routes
