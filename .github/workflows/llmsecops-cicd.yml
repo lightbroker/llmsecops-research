@@ -10,26 +10,10 @@ jobs:
       - name: 'checkout'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       
-      - name: 'set up git LFS'
-        run: git lfs install
-      
       - name: 'set up Python'
         uses: actions/setup-python@v3
         with:
           python-version: '3.12'
-      
-      - name: 'set up Python dependencies'
-        run: |
-          pip install -r ${{ github.workspace }}/requirements.txt
-      
-      - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
-        id: setup_llm
-        run: |
-          pip install huggingface-hub[cli]
-          huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx \
-            --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* \
-            --local-dir ${{ github.workspace }}/src/text_generation/adapters/llm
-        continue-on-error: false
       
       - name: 'set up Garak'
         run: |
@@ -39,7 +23,7 @@ jobs:
       - name: 'start HTTP server'
         id: start_server
         run: |
-          nohup python -m src.api.server > server.log 2>&1 &
+          nohup ./run.sh > server.log 2>&1 &
           server_pid=$!
           echo "Server PID: $server_pid"
           echo "server_pid=$server_pid" >> $GITHUB_ENV
@@ -71,8 +55,8 @@ jobs:
         id: run_tests
         run: |
           # Test curl with detailed error reporting
-          # curl_output=$(curl -X POST -i localhost:9999/api/conversations -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' --connect-timeout 10 -v 2>&1) || true
-          # echo "$curl_output"
+          curl_output=$(curl -X POST -i localhost:9999/api/conversations -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' --connect-timeout 10 -v 2>&1) || true
+          echo "$curl_output"
           
           garak -v \
             --config ${{ github.workspace }}/src/tools/garak.config.yml \

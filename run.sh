@@ -1,14 +1,33 @@
 #!/usr/bin/bash
 
-# create Python virtual environment
-python3.12 -m venv .env
-source .env/bin/activate
+# Local-only usage: ./script.sh --local
+
+# Parse command line arguments
+LOCAL=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --local)
+            LOCAL=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$LOCAL" = true ]; then
+    # create Python virtual environment
+    python3.12 -m venv .env
+    source .env/bin/activate
+fi
 
 # the ONNX model/data require git Large File System support
 git lfs install
 
 # install Python dependencies
-# pip install huggingface-hub[cli] langchain langchain_huggingface langchain_community optimum[onnxruntime] faiss-cpu
 pip install -r ./requirements.txt
 
 # environment variables
