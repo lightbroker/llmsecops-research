@@ -1,0 +1,128 @@
+name: 'LLM Prompt Testing (WSGI; no RAG)'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      
+      - name: 'set up Python'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+      
+      - name: 'start and test HTTP server'
+        id: start_server
+        run: |
+          nohup ./run.sh > server.log 2>&1 &
+          server_pid=$!
+          echo "Server PID: $server_pid"
+          echo "server_pid=$server_pid" >> $GITHUB_ENV
+          ${{ github.workspace }}/.github/scripts/test_api.sh
+          
+      - name: 'run garak tests'
+        id: run_tests
+        run: |
+          garak -v \
+            --config ${{ github.workspace }}/tests/security/garak.config.yml \
+            --generator_option_file ${{ github.workspace }}/tests/security/garak.rest.llm.json \
+            --model_type=rest \
+            --parallel_attempts 32
+          garak_exit_code=$?
+          echo "garak exit code: $garak_exit_code"
+          
+          # Store exit code for later use
+          echo "garak_exit_code=$garak_exit_code" >> $GITHUB_ENV
+        continue-on-error: true
+      
+      - name: 'Collect and display server logs'
+        if: always()
+        run: |
+          echo "::group::Server Log"
+          cat server.log || true
+          echo "::endgroup::"
+          
+          # Check if server process is still running and kill it
+          if [ -n "$server_pid" ]; then
+            echo "Stopping server process (PID: $server_pid)..."
+            kill -9 $server_pid 2>/dev/null || true
+          fi
+          
+          # Create a summary of the workflow
+          echo "# LLM Prompt Testing Workflow Summary" > $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Add curl test results to summary
+          echo "## Curl Test Results" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.run_tests.outcome }}" == "success" ]]; then
+            echo "✅ Curl request test succeeded" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Curl request test failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Add Garak results to summary
+          echo "## Garak Test Results" >> $GITHUB_STEP_SUMMARY
+          if [[ "$garak_exit_code" == "0" ]]; then
+            echo "✅ Garak tests succeeded" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Garak tests failed with exit code $garak_exit_code" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Add server log summary
+          echo "## Server Log Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 30 server.log >> $GITHUB_STEP_SUMMARY || echo "No server log available" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      
+      - name: 'Collect system diagnostics'
+        if: always()
+        run: |
+          # Create diagnostics file
+          echo "::group::System Diagnostics"
+          diagnostics_file="system_diagnostics.txt"
+          echo "=== System Information ===" > $diagnostics_file
+          uname -a >> $diagnostics_file
+          echo "" >> $diagnostics_file
+          
+          echo "=== Network Status ===" >> $diagnostics_file
+          echo "Checking port 9999:" >> $diagnostics_file
+          ss -tulpn | grep 9999 >> $diagnostics_file || echo "No process found on port 9999" >> $diagnostics_file
+          echo "" >> $diagnostics_file
+          
+          echo "=== Process Status ===" >> $diagnostics_file
+          ps aux | grep python >> $diagnostics_file
+          echo "" >> $diagnostics_file
+          
+          echo "=== Memory Usage ===" >> $diagnostics_file
+          free -h >> $diagnostics_file
+          echo "" >> $diagnostics_file
+          
+          cat $diagnostics_file
+          echo "::endgroup::"
+      
+      - name: 'Upload logs as artifacts'
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: workflow-logs
+          path: |
+            server.log
+            system_diagnostics.txt
+            ${{ github.workspace }}/src/tools/garak.config.yml
+            ${{ github.workspace }}/src/tools/garak.rest.llm.json
+          retention-days: 7
+      
+      # Final status check to fail the workflow if tests failed
+      - name: 'Check final status'
+        if: always()
+        run: |
+          if [[ "${{ steps.run_tests.outcome }}" != "success" || "$garak_exit_code" != "0" ]]; then
+            echo "::error::Tests failed - check logs and summary for details"
+            exit 1
+          fi
