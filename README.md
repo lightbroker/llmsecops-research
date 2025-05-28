@@ -7,5 +7,5 @@ This repo supports graduate research conducted by Adam Wilson for the M.Sc., Inf
 ## Local setup (Linux Ubuntu)
 
 ```sh
-$ sudo ./llm_setup.sh
+$ sudo ./local.sh
 ```

@@ -4,7 +4,12 @@ set -e  # Exit on error
 cd $GITHUB_WORKSPACE
 
 echo "Starting API server with logging..."
-nohup python -m src.api.server > logs/api.log 2>&1 &
+
+nohup uvicorn src.api.http_api:app \
+    --host 0.0.0.0 --port 9999 \
+    --workers 2 --loop uvloop \
+    --http httptools --no-use-colors > logs/api.log 2>&1 &
+
 API_PID=$!
 echo "API server started with PID: $API_PID"
 

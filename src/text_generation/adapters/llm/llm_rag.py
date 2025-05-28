@@ -2,57 +2,33 @@
 RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
 """
 
-import os
+import logging
+import sys
 
 # LangChain imports
-from langchain_huggingface import HuggingFacePipeline
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
-
-# HuggingFace and ONNX imports
-from optimum.onnxruntime import ORTModelForCausalLM
-from transformers import AutoTokenizer, pipeline
+from src.text_generation.adapters.llm.text_generation_model import TextGenerationFoundationModel
 
 
 class Phi3LanguageModelWithRag:
 
-    def invoke(self, user_input):
+    def __init__(self):
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler(sys.stdout)
+        logger.addHandler(handler)
+        self.logger = logger
+        self.configure_model()
 
-        # Set up paths to the local model
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(base_dir, "cpu_and_mobile", "cpu-int4-rtn-block-32-acc-level-4")
-        print(f"Loading Phi-3 model from: {model_path}")
-
-        # Load the tokenizer and model
-        tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path=model_path,
-            trust_remote_code=True
-        )
-        model = ORTModelForCausalLM.from_pretrained(
-            model_id=model_path,
-            provider="CPUExecutionProvider",
-            trust_remote_code=True
-        )
-        model.name_or_path = model_path
-
-        # Create the text generation pipeline
-        pipe = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-            max_new_tokens=512,
-            temperature=0.7,
-            top_p=0.9,
-            repetition_penalty=1.1,
-            do_sample=True
-        )
+    def configure_model(self):
 
         # Create the LangChain LLM
-        llm = HuggingFacePipeline(pipeline=pipe)
+        llm = TextGenerationFoundationModel().build()
 
         # Initialize the embedding model - using a small, efficient model
         # Options:
@@ -64,7 +40,6 @@ class Phi3LanguageModelWithRag:
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True}
         )
-        print("Embedding model loaded")
 
         # Sample documents about artificial intelligence
         docs = [
@@ -141,7 +116,7 @@ class Phi3LanguageModelWithRag:
         )
 
         # Create the retrieval QA chain
-        qa_chain = RetrievalQA.from_chain_type(
+        self.qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",  # "stuff" method puts all retrieved docs into one prompt
             retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),  # Retrieve top 3 results
@@ -149,10 +124,9 @@ class Phi3LanguageModelWithRag:
             chain_type_kwargs={"prompt": prompt}  # Use our custom prompt
         )
 
+    def invoke(self, user_input: str) -> str:
+
         # Get response from the chain
-        response = qa_chain.invoke({"query": user_input})
-        
-        # Print the answer
-        print(response["result"])
-        
+        response = self.qa_chain.invoke({"query": user_input})
         return response["result"]
+ 
