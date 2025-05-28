@@ -1,12 +1,10 @@
 import json
-import time
 import traceback
 
+from src.text_generation.adapters.llm.llm import Phi3LanguageModel
+from src.text_generation.adapters.llm.llm_rag import Phi3LanguageModelWithRag
 
-from src.llm.llm import Phi3LanguageModel
-from src.llm.llm_rag import Phi3LanguageModelWithRag
-
-class ApiController:
+class HttpApiController:
     def __init__(self):
         self.routes = {}
         # Register routes
@@ -16,6 +14,7 @@ class ApiController:
 
     def register_routes(self):
         """Register all API routes"""
+        self.routes[('GET', '/')] = self.health_check
         self.routes[('POST', '/api/conversations')] = self.handle_conversations
         self.routes[('POST', '/api/rag_conversations')] = self.handle_conversations_with_rag
 
@@ -42,6 +41,12 @@ class ApiController:
             response_body = json.dumps({'response': str(data)}).encode('utf-8')
         return response_body
 
+    def health_check(self, env, start_response):
+        response_body = self.format_response({ "success": True })
+        response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
+        start_response('200 OK', response_headers)    
+        return [response_body]
+    
     def handle_conversations(self, env, start_response):
         """Handle POST requests to /api/conversations"""
         try:
@@ -111,9 +116,6 @@ class ApiController:
     def __call__(self, env, start_response):
         method = env.get('REQUEST_METHOD').upper()
         path = env.get('PATH_INFO')
-
-        if method != 'POST':
-            return self.__http_415_notsupported(env, start_response)
 
         try:                
             handler = self.routes.get((method, path), self.__http_200_ok)

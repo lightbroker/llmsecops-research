@@ -1,7 +1,7 @@
 import json
 import logging
 
-from src.api.controller import ApiController
+from src.text_generation.entrypoints.http_api_controller import HttpApiController
 from wsgiref.simple_server import make_server
 
 
@@ -16,7 +16,7 @@ class RestApiServer:
     def listen(self):
         try:
             port = 9999
-            controller = ApiController()
+            controller = HttpApiController()
             with make_server('', port, controller) as wsgi_srv:
                 print(f'listening on port {port}...')
                 wsgi_srv.serve_forever()
