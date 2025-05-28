@@ -15,49 +15,18 @@ jobs:
         with:
           python-version: '3.12'
       
-      - name: 'set up Garak'
-        run: |
-          pip install garak
-        continue-on-error: false
-      
-      - name: 'start HTTP server'
+      - name: 'start and test HTTP server'
         id: start_server
         run: |
           nohup ./run.sh > server.log 2>&1 &
           server_pid=$!
-          # echo "Server PID: $server_pid"
-          # echo "server_pid=$server_pid" >> $GITHUB_ENV
+          echo "Server PID: $server_pid"
+          echo "server_pid=$server_pid" >> $GITHUB_ENV
+          ${{ github.workspace }}/.github/scripts/test_api.sh
           
-          # # Wait for server to start and verify it's running
-          # max_retries=30
-          # retry_count=0
-          # server_ready=false
-          
-          # while [ $retry_count -lt $max_retries ] && [ "$server_ready" = false ]; do
-          #   echo "Waiting for server to start (attempt $retry_count/$max_retries)..."
-          #   if curl -s -o /dev/null -w "%{http_code}" localhost:9999 > /dev/null 2>&1; then
-          #     server_ready=true
-          #     echo "Server is running"
-          #   else
-          #     sleep 2
-          #     retry_count=$((retry_count + 1))
-          #   fi
-          # done
-          
-          # if [ "$server_ready" = false ]; then
-          #   echo "::error::Server failed to start after $max_retries attempts"
-          #   echo "=== Server Log (last 50 lines) ==="
-          #   tail -n 50 server.log || true
-          #   exit 1
-          # fi
-      
-      - name: 'Test server with curl and run garak'
+      - name: 'run garak tests'
         id: run_tests
         run: |
-          # Test curl with detailed error reporting
-          curl_output=$(curl -X POST -i localhost:9999/api/conversations -d '{ "prompt": "describe a random planet in our solar system in 10 words or less" }' --connect-timeout 10 -v 2>&1) || true
-          echo "$curl_output"
-          
           garak -v \
             --config ${{ github.workspace }}/tests/security/garak.config.yml \
             --generator_option_file ${{ github.workspace }}/tests/security/garak.rest.llm-rag.json \

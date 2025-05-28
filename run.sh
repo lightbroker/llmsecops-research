@@ -1,6 +1,5 @@
 #!/usr/bin/bash
-
-# Local-only usage: ./script.sh --local
+# Local-only usage: ./run.sh --local
 
 # Parse command line arguments
 LOCAL=false
