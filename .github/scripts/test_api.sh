@@ -26,7 +26,7 @@ fi
 echo "Making API request..."
 
 # Wait for server to start and verify it's running
-max_retries=30
+max_retries=200
 retry_count=0
 server_ready=false
 
