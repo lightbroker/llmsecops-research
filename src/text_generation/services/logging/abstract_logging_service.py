@@ -8,3 +8,6 @@ class AbstractLoggingService(abc.ABC):
         logger.setLevel(logging.DEBUG)
         logger.addHandler(handler)
         self.logger = logger
+
+    def _get_logger(self):
+        return self.logger
