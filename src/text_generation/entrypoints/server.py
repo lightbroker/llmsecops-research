@@ -1,11 +1,11 @@
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
-from src.text_generation.service.logging_service import LoggingService
+from src.text_generation.services.logging.file_logging_service import FileLoggingService
 from wsgiref.simple_server import make_server
 
 
 class RestApiServer:
     def __init__(self):
-        self.logger = LoggingService(filename='text_generation.server.log').logger
+        self.logger = FileLoggingService(filename='text_generation.server.log')
 
     def listen(self):
         try:

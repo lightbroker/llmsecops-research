@@ -3,11 +3,11 @@ import traceback
 
 from src.text_generation.adapters.llm.llm import Phi3LanguageModel
 from src.text_generation.adapters.llm.llm_rag import Phi3LanguageModelWithRag
-from src.text_generation.service.logging_service import LoggingService
+from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 class HttpApiController:
     def __init__(self):
-        self.logger = LoggingService(filename='text_generation.controller.log').logger
+        self.logger = FileLoggingService(filename='text_generation.controller.log').logger
         self.routes = {}
         # Register routes
         self.register_routes()
