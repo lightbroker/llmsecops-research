@@ -1,17 +1,11 @@
-import json
-import logging
-
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
+from src.text_generation.service.logging_service import LoggingService
 from wsgiref.simple_server import make_server
 
 
 class RestApiServer:
     def __init__(self):
-        pass
-
-    def post_response(self, env, start_response):
-        start_response('200 OK', [('Content-Type', 'application/json')])
-        yield [json.dumps({'received': 'data'}).encode('utf-8')]
+        self.logger = LoggingService(filename='text_generation.server.log').logger
 
     def listen(self):
         try:
@@ -21,8 +15,7 @@ class RestApiServer:
                 print(f'listening on port {port}...')
                 wsgi_srv.serve_forever()
         except Exception as e:
-            logging.warning(e)
-
+            self.logger.debug(e)
 
 if __name__ == '__main__':
     srv = RestApiServer()

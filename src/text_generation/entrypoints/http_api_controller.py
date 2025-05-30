@@ -3,9 +3,11 @@ import traceback
 
 from src.text_generation.adapters.llm.llm import Phi3LanguageModel
 from src.text_generation.adapters.llm.llm_rag import Phi3LanguageModelWithRag
+from src.text_generation.service.logging_service import LoggingService
 
 class HttpApiController:
     def __init__(self):
+        self.logger = LoggingService(filename='text_generation.controller.log').logger
         self.routes = {}
         # Register routes
         self.register_routes()
@@ -67,8 +69,10 @@ class HttpApiController:
         data = self.get_service_response(prompt)
         response_body = self.format_response(data)
         
+        http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
-        start_response('200 OK', response_headers)    
+        start_response(f'{http_status_code} OK', response_headers)
+        self.logger.info('non-RAG response', request_body, http_status_code, response_body)
         return [response_body]
 
     def handle_conversations_with_rag(self, env, start_response):
@@ -91,8 +95,10 @@ class HttpApiController:
         data = self.get_service_response_with_rag(prompt)
         response_body = self.format_response(data)
         
+        http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
-        start_response('200 OK', response_headers)    
+        start_response(f'{http_status_code} OK', response_headers)
+        self.logger.info('RAG response', request_body, http_status_code, response_body)
         return [response_body]
 
     def __http_200_ok(self, env, start_response):
