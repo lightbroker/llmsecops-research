@@ -5,7 +5,8 @@ from wsgiref.simple_server import make_server
 
 class RestApiServer:
     def __init__(self):
-        self.logger = FileLoggingService(filename='text_generation.server.log')
+        logging_service = FileLoggingService(filename='text_generation.server.log')
+        self.logger = logging_service.logger
 
     def listen(self):
         try:

@@ -16,7 +16,7 @@ from src.text_generation.adapters.llm.abstract_language_model import AbstractLan
 from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
 
 
-class Phi3LanguageModelWithRag(AbstractLanguageModel):
+class LanguageModelWithRag(AbstractLanguageModel):
 
     def __init__(self):
         logger = logging.getLogger()

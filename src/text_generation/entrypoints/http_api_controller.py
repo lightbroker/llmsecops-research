@@ -1,8 +1,8 @@
 import json
 import traceback
 
-from src.text_generation.services.language_models.language_model_response_service import TextGenerationResponseService
-from src.text_generation.adapters.llm.language_model_with_rag import Phi3LanguageModelWithRag
+from src.text_generation.services.language_models.text_generation_response_service import TextGenerationResponseService
+from src.text_generation.services.language_models.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 class HttpApiController:
@@ -12,7 +12,7 @@ class HttpApiController:
         # Register routes
         self.register_routes()
         self.text_generation_svc = TextGenerationResponseService()
-        self.llm_rag_svc = Phi3LanguageModelWithRag()
+        self.rag_svc = RetrievalAugmentedGenerationResponseService()
 
     def register_routes(self):
         """Register all API routes"""
@@ -84,7 +84,7 @@ class HttpApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
 
-        response_text = self.text_generation_svc.invoke(user_prompt=prompt)
+        response_text = self.rag_svc.invoke(user_prompt=prompt)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
