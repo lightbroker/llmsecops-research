@@ -1,15 +1,8 @@
-"""
-RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
-"""
-
 import logging
 import os
 import sys
 
-# LangChain imports
 from langchain_huggingface import HuggingFacePipeline
-
-# HuggingFace and ONNX imports
 from optimum.onnxruntime import ORTModelForCausalLM
 from transformers import AutoTokenizer, pipeline
 
@@ -35,7 +28,7 @@ class TextGenerationFoundationModel:
         
         self.logger.debug(f'model_base_dir: {model_base_dir}')
         self.logger.debug(f'model_cpu_dir: {model_cpu_dir}')
-        self.logger.debug(f"Loading Phi-3 model from: {model_path}")
+        self.logger.debug(f'Loading Phi-3 model from: {model_path}')
 
         # Load the tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(

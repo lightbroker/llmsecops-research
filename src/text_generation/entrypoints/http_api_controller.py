@@ -1,8 +1,8 @@
 import json
 import traceback
 
-from src.text_generation.adapters.llm.llm import Phi3LanguageModel
-from src.text_generation.adapters.llm.llm_rag import Phi3LanguageModelWithRag
+from src.text_generation.services.language_models.language_model_response_service import TextGenerationResponseService
+from src.text_generation.adapters.llm.language_model_with_rag import Phi3LanguageModelWithRag
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 class HttpApiController:
@@ -11,7 +11,7 @@ class HttpApiController:
         self.routes = {}
         # Register routes
         self.register_routes()
-        self.llm_svc = Phi3LanguageModel() # TODO: rename this as a service
+        self.text_generation_svc = TextGenerationResponseService()
         self.llm_rag_svc = Phi3LanguageModelWithRag()
 
     def register_routes(self):
@@ -24,14 +24,6 @@ class HttpApiController:
         response_headers = [('Content-Type', 'application/json')]
         start_response('415 Unsupported Media Type', response_headers)
         return [json.dumps({'error': 'Unsupported Content-Type'}).encode('utf-8')]
-
-    def get_service_response(self, prompt):
-        response = self.llm_svc.invoke(user_input=prompt)
-        return response
-    
-    def get_service_response_with_rag(self, prompt):
-        response = self.llm_rag_svc.invoke(user_input=prompt)
-        return response
 
     def format_response(self, data):
         """Format response data as JSON with 'response' key"""
@@ -66,8 +58,8 @@ class HttpApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
 
-        data = self.get_service_response(prompt)
-        response_body = self.format_response(data)
+        response_text = self.text_generation_svc.invoke(user_prompt=prompt)
+        response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
@@ -92,8 +84,8 @@ class HttpApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
 
-        data = self.get_service_response_with_rag(prompt)
-        response_body = self.format_response(data)
+        response_text = self.text_generation_svc.invoke(user_prompt=prompt)
+        response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
@@ -101,7 +93,7 @@ class HttpApiController:
         self.logger.info('RAG response', request_body, http_status_code, response_body)
         return [response_body]
 
-    def __http_200_ok(self, env, start_response):
+    def _http_200_ok(self, env, start_response):
         """Default handler for other routes"""
         try:
             request_body_size = int(env.get('CONTENT_LENGTH', 0))
@@ -124,7 +116,7 @@ class HttpApiController:
         path = env.get('PATH_INFO')
 
         try:                
-            handler = self.routes.get((method, path), self.__http_200_ok)
+            handler = self.routes.get((method, path), self._http_200_ok)
             return handler(env, start_response)
         except json.JSONDecodeError as e:
             response_body = json.dumps({'error': f"Invalid JSON: {e.msg}"}).encode('utf-8')

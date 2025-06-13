@@ -1,18 +1,14 @@
-"""
-RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
-"""
-
 import logging
 import sys
 
-# LangChain imports
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from src.text_generation.adapters.llm.text_generation_model import TextGenerationFoundationModel
+from src.text_generation.adapters.llm.abstract_language_model import AbstractLanguageModel
+from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
 
 
-class Phi3LanguageModel:
+class LanguageModel(AbstractLanguageModel):
 
     def __init__(self):
         logger = logging.getLogger()
@@ -20,9 +16,14 @@ class Phi3LanguageModel:
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
         self.logger = logger
-        self.configure_model()
+        self._configure_model()
 
-    def configure_model(self):
+    def _extract_assistant_response(self, text):
+        if "<|assistant|>" in text:
+            return text.split("<|assistant|>")[-1].strip()
+        return text
+
+    def _configure_model(self):
 
         # Create the LangChain LLM
         llm = TextGenerationFoundationModel().build()
@@ -42,21 +43,15 @@ class Phi3LanguageModel:
             | prompt
             | llm
             | StrOutputParser()
-            | self.extract_assistant_response
+            | self._extract_assistant_response
         )
 
-    def extract_assistant_response(self, text):
-        if "<|assistant|>" in text:
-            return text.split("<|assistant|>")[-1].strip()
-        return text
-
-
-    def invoke(self, user_input: str) -> str:
+    def invoke(self, user_prompt: str) -> str:
         try:
             # Get response from the chain
-            response = self.chain.invoke(user_input)
+            response = self.chain.invoke(user_prompt)
             return response
         except Exception as e:
             self.logger.error(f"Failed: {e}")
-            return e
+            raise e
         

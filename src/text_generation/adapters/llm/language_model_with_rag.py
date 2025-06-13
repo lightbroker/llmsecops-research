@@ -1,11 +1,6 @@
-"""
-RAG implementation with local Phi-3-mini-4k-instruct-onnx and embeddings
-"""
-
 import logging
 import sys
 
-# LangChain imports
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -17,10 +12,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
-from src.text_generation.adapters.llm.text_generation_model import TextGenerationFoundationModel
+from src.text_generation.adapters.llm.abstract_language_model import AbstractLanguageModel
+from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
 
 
-class Phi3LanguageModelWithRag:
+class Phi3LanguageModelWithRag(AbstractLanguageModel):
 
     def __init__(self):
         logger = logging.getLogger()
@@ -131,9 +127,9 @@ class Phi3LanguageModelWithRag:
             return raw_answer.strip()
 
 
-    def invoke(self, user_input: str) -> str:
+    def invoke(self, user_prompt: str) -> str:
 
-        context_docs = self.vectorstore.as_retriever(search_kwargs={"k": 3}).invoke(user_input)
+        context_docs = self.vectorstore.as_retriever(search_kwargs={"k": 3}).invoke(user_prompt)
         context = self.format_docs(context_docs)
 
         # PROMPT_TEMPLATE = """<|system|>
@@ -173,14 +169,10 @@ class Phi3LanguageModelWithRag:
         chain = prompt | self.llm | StrOutputParser()
         raw_answer = chain.invoke({
             "context": context,
-            "question": user_input
+            "question": user_prompt
         })
         
         # Clean up the answer (remove any remaining template artifacts)
         assistant_answer = self.parse_assistant_answer(raw_answer)
         
-        return {
-            # "question": user_input,
-            # "context": context,
-            "answer": assistant_answer
-        }
+        return assistant_answer
