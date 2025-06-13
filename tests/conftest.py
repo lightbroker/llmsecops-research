@@ -1,5 +1,6 @@
 # conftest.py - Shared test configuration and fixtures
 
+import time
 import pytest
 import os
 import tempfile
@@ -8,6 +9,8 @@ from unittest.mock import Mock, MagicMock
 from datetime import datetime, timedelta
 import requests
 from typing import Generator, Dict, Any
+from tenacity import retry, stop_after_delay
+from src.text_generation import config
 
 # ==============================================================================
 # SESSION-SCOPED FIXTURES (created once per test session)
@@ -42,6 +45,16 @@ def api_client():
 # ==============================================================================
 # FUNCTION-SCOPED FIXTURES (created for each test function)
 # ==============================================================================
+
+@retry(stop=stop_after_delay(10))
+def wait_for_responsive_http_api():
+    return requests.get(config.get_api_url())
+
+@pytest.fixture
+def restart_api():
+    (Path(__file__).parent / "../src/text_generation/entrypoints/server.py").touch()
+    time.sleep(0.5)
+    wait_for_responsive_http_api()
 
 @pytest.fixture
 def sample_user_data():
