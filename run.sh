@@ -49,5 +49,4 @@ else
     echo "Foundation model files already exist at: $MODEL_DATA_FILEPATH"
 fi
 
-python -m src.text_generation.entrypoints.server
-
+python -m src.text_generation.entrypoints.__main__

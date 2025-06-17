@@ -1,46 +1,33 @@
 import logging
 import sys
 
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
-from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from src.text_generation.adapters.llm.abstract_language_model import AbstractLanguageModel
+from src.text_generation.adapters.llm.abstract_embedding_model import AbstractEmbeddingModel
 from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
 
 
 class LanguageModelWithRag(AbstractLanguageModel):
 
-    def __init__(self):
+    def __init__(self, embeddings: AbstractEmbeddingModel):
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
         handler = logging.StreamHandler(sys.stdout)
         logger.addHandler(handler)
         self.logger = logger
+        self.embeddings = embeddings
         self._configure_model()
 
     def _configure_model(self):
 
         # Create the LangChain LLM
         self.llm = TextGenerationFoundationModel().build()
-
-        # Initialize the embedding model - using a small, efficient model
-        # Options:
-        # - "BAAI/bge-small-en-v1.5" (385MB, good performance/size ratio)
-        # - "sentence-transformers/all-MiniLM-L6-v2" (91MB, very small)
-        # - "intfloat/e5-small-v2" (134MB, good performance)
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True}
-        )
 
         # Sample documents about artificial intelligence
         docs = [
@@ -100,10 +87,8 @@ class LanguageModelWithRag(AbstractLanguageModel):
         split_docs = text_splitter.split_documents(data)
 
         # Create a FAISS vector store from the chunks
-        self.vectorstore = FAISS.from_documents(split_docs, embeddings)
+        self.vectorstore = FAISS.from_documents(split_docs, self.embeddings)
 
-
-        
 
     def format_docs(self, docs):
         return "\n\n".join(doc.page_content for doc in docs)

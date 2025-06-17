@@ -6,13 +6,32 @@ from src.text_generation.services.language_models.retrieval_augmented_generation
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 class HttpApiController:
-    def __init__(self):
-        self.logger = FileLoggingService(filename='text_generation.controller.log').logger
+    def __init__(
+            self, 
+            logging_service: FileLoggingService,
+            text_generation_response_service: TextGenerationResponseService,
+            rag_response_service: RetrievalAugmentedGenerationResponseService
+    ):
+        self.logger = logging_service.logger
+        
+        # TODO: temp debug
+        self.original_info = self.logger.info
+        self.logger.info = self.debug_info
+        
+        self.text_generation_response_service = text_generation_response_service
+        self.rag_response_service = rag_response_service
         self.routes = {}
-        # Register routes
         self.register_routes()
-        self.text_generation_svc = TextGenerationResponseService()
-        self.rag_svc = RetrievalAugmentedGenerationResponseService()
+
+    def debug_info(self, msg, *args, **kwargs):
+        try:
+            return self.original_info(msg, *args, **kwargs)
+        except TypeError as e:
+            print(f"Logging error with message: {repr(msg)}")
+            print(f"Args: {args}")
+            print(f"Kwargs: {kwargs}")
+            raise e
+
 
     def register_routes(self):
         """Register all API routes"""
@@ -58,7 +77,7 @@ class HttpApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
 
-        response_text = self.text_generation_svc.invoke(user_prompt=prompt)
+        response_text = self.text_generation_response_service.invoke(user_prompt=prompt)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
@@ -84,7 +103,7 @@ class HttpApiController:
             start_response('400 Bad Request', response_headers)
             return [response_body]
 
-        response_text = self.rag_svc.invoke(user_prompt=prompt)
+        response_text = self.rag_response_service.invoke(user_prompt=prompt)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum

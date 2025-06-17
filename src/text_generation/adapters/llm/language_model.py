@@ -6,16 +6,13 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from src.text_generation.adapters.llm.abstract_language_model import AbstractLanguageModel
 from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
+from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 
 class LanguageModel(AbstractLanguageModel):
 
-    def __init__(self):
-        logger = logging.getLogger()
-        logger.setLevel(logging.DEBUG)
-        handler = logging.StreamHandler(sys.stdout)
-        logger.addHandler(handler)
-        self.logger = logger
+    def __init__(self, logging_service: FileLoggingService):
+        self.logger = logging_service.logger
         self._configure_model()
 
     def _extract_assistant_response(self, text):
