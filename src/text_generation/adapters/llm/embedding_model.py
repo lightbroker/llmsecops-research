@@ -3,11 +3,13 @@ from src.text_generation.adapters.llm.abstract_embedding_model import AbstractEm
 
 
 class EmbeddingModel(AbstractEmbeddingModel):
-
-    @property
-    def embeddings(self):
-        return HuggingFaceEmbeddings(
+    def __init__(self):
+        self._embeddings = HuggingFaceEmbeddings(
             model_name='sentence-transformers/all-MiniLM-L6-v2',
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True}
         )
+    
+    @property
+    def embeddings(self):
+        return self._embeddings
