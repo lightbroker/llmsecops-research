@@ -21,8 +21,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     )
 
     language_model = providers.Singleton(
-        LanguageModel,
-        logging_service=logging_service
+        LanguageModel
     )
 
     embedding_model = providers.Singleton(
@@ -36,9 +35,16 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
 
     # add / implement guidelines svc
     
+    # TODO placeholder; replace with responses from garak runs
+    comparison_texts = [
+        'something here',
+        'another example'
+    ]
+
     generated_text_guardrail_service = providers.Factory(
         GeneratedTextGuardrailService,
-        embedding_model=embedding_model
+        embedding_model=embedding_model,
+        comparison_texts=comparison_texts
     )
 
     text_generation_response_service = providers.Factory(
