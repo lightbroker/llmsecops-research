@@ -1,18 +1,13 @@
-import logging
-import sys
-
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from src.text_generation.adapters.llm.abstract_language_model import AbstractLanguageModel
 from src.text_generation.adapters.llm.text_generation_foundation_model import TextGenerationFoundationModel
-from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 
 class LanguageModel(AbstractLanguageModel):
 
-    def __init__(self, logging_service: FileLoggingService):
-        self.logger = logging_service.logger
+    def __init__(self):
         self._configure_model()
 
     def _extract_assistant_response(self, text):
@@ -49,6 +44,5 @@ class LanguageModel(AbstractLanguageModel):
             response = self.chain.invoke(user_prompt)
             return response
         except Exception as e:
-            self.logger.error(f"Failed: {e}")
             raise e
         

@@ -6,7 +6,7 @@ from src.text_generation.entrypoints.http_api_controller import HttpApiControlle
 from src.text_generation.entrypoints.server import RestApiServer
 from src.text_generation.services.language_models.text_generation_response_service import TextGenerationResponseService
 from src.text_generation.services.language_models.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
-from src.text_generation.services.similarity_scoring.text_similarity_scoring_service import GeneratedTextGuardrailService
+from src.text_generation.services.similarity_scoring.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
 
 
@@ -33,8 +33,10 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         RetrievalAugmentedGenerationResponseService,
         embedding_model=embedding_model
     )
+
+    # add / implement guidelines svc
     
-    guardrail_service = providers.Factory(
+    generated_text_guardrail_service = providers.Factory(
         GeneratedTextGuardrailService,
         embedding_model=embedding_model
     )
@@ -48,7 +50,8 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         HttpApiController,
         logging_service=logging_service,
         text_generation_response_service=text_generation_response_service,
-        rag_response_service=rag_response_service
+        rag_response_service=rag_response_service,
+        generated_text_guardrail_service=generated_text_guardrail_service
     )
 
     rest_api_server = providers.Factory(

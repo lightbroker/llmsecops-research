@@ -4,13 +4,16 @@ import traceback
 from src.text_generation.services.language_models.text_generation_response_service import TextGenerationResponseService
 from src.text_generation.services.language_models.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
+from src.text_generation.services.similarity_scoring.generated_text_guardrail_service import GeneratedTextGuardrailService
+
 
 class HttpApiController:
     def __init__(
             self, 
             logging_service: FileLoggingService,
             text_generation_response_service: TextGenerationResponseService,
-            rag_response_service: RetrievalAugmentedGenerationResponseService
+            rag_response_service: RetrievalAugmentedGenerationResponseService,
+            generated_text_guardrail_service: GeneratedTextGuardrailService
     ):
         self.logger = logging_service.logger
         
@@ -20,6 +23,8 @@ class HttpApiController:
         
         self.text_generation_response_service = text_generation_response_service
         self.rag_response_service = rag_response_service
+        self.generated_text_guardrail_service = generated_text_guardrail_service
+
         self.routes = {}
         self.register_routes()
 
@@ -78,12 +83,13 @@ class HttpApiController:
             return [response_body]
 
         response_text = self.text_generation_response_service.invoke(user_prompt=prompt)
+        score = self.generated_text_guardrail_service.analyze(response_text)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
         start_response(f'{http_status_code} OK', response_headers)
-        self.logger.info('non-RAG response', request_body, http_status_code, response_body)
+        self.logger.info('non-RAG response: request body %s | status: %s | response: %s', request_body, http_status_code, response_body)
         return [response_body]
 
     def handle_conversations_with_rag(self, env, start_response):
@@ -104,12 +110,13 @@ class HttpApiController:
             return [response_body]
 
         response_text = self.rag_response_service.invoke(user_prompt=prompt)
+        score = self.generated_text_guardrail_service.analyze(response_text)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
         start_response(f'{http_status_code} OK', response_headers)
-        self.logger.info('RAG response', request_body, http_status_code, response_body)
+        self.logger.info('RAG response: request body %s | status: %s | response: %s', request_body, http_status_code, response_body)
         return [response_body]
 
     def _http_200_ok(self, env, start_response):
