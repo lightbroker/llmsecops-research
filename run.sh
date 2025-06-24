@@ -35,10 +35,6 @@ export MODEL_CPU_DIR="cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4"
 MODEL_DATA_FILENAME="phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx.data"
 MODEL_DATA_FILEPATH="$MODEL_BASE_DIR/$MODEL_CPU_DIR/$MODEL_DATA_FILENAME"
 
-echo "==================="
-echo "$MODEL_DATA_FILEPATH"
-echo "==================="
-
 # get foundation model dependencies from HuggingFace / Microsoft
 if [ ! -f "$MODEL_DATA_FILEPATH" ]; then
     echo "Downloading foundation model..."
@@ -46,7 +42,7 @@ if [ ! -f "$MODEL_DATA_FILEPATH" ]; then
         --include "$MODEL_CPU_DIR/*" \
         --local-dir $MODEL_BASE_DIR
 else
-    echo "Foundation model files already exist at: $MODEL_DATA_FILEPATH"
+    echo "Foundation model files exist at: $MODEL_DATA_FILEPATH"
 fi
 
 python -m src.text_generation.entrypoints.__main__
