@@ -13,6 +13,7 @@ from tenacity import retry, stop_after_delay
 from src.text_generation import config
 from src.text_generation.adapters.llm.embedding_model import EmbeddingModel
 from src.text_generation.adapters.llm.language_model import LanguageModel
+from src.text_generation.adapters.llm.language_model_with_rag import LanguageModelWithRag
 from src.text_generation.services.language_models.text_generation_response_service import TextGenerationResponseService
 from src.text_generation.services.similarity_scoring.generated_text_guardrail_service import GeneratedTextGuardrailService
 
@@ -49,6 +50,10 @@ def language_model():
 @pytest.fixture(scope="session")
 def embedding_model():
     return EmbeddingModel()
+
+@pytest.fixture(scope="session")
+def language_model_with_rag(embedding_model):
+    return LanguageModelWithRag(embeddings=embedding_model)
 
 @pytest.fixture(scope="session")
 def text_generation_response_service(language_model):
