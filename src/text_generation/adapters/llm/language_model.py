@@ -21,9 +21,10 @@ class LanguageModel(AbstractLanguageModel):
         llm = TextGenerationFoundationModel().build()
 
         # Phi-3 specific prompt template
-        template = """<|user|>
+        template = """<|system|>
         Act as a conversational agent to respond to the end user's prompt. 
-        Question: {question}
+        <|user|>
+        Question: {question}<|end|>
         <|assistant|>
         """
 
