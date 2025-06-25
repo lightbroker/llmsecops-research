@@ -16,7 +16,9 @@ from src.text_generation.services.language_models.text_generation_response_servi
 from src.text_generation.services.language_models.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
 from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
-from src.text_generation.services.similarity_scoring.generated_text_guardrail_service import GeneratedTextGuardrailService
+from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
+from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
+from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
 # ==============================================================================
@@ -53,8 +55,23 @@ def embedding_model():
     return EmbeddingModel()
 
 @pytest.fixture(scope="session")
-def rag_service(foundation_model, embedding_model):
-    return RetrievalAugmentedGenerationResponseService(foundation_model, embedding_model)
+def rag_guidelines_service(embedding_model):
+    return RetrievalAugmentedGenerationGuidelinesService(embedding_model)
+
+@pytest.fixture(scope="session")
+def response_processing_service():
+    return ResponseProcessingService()
+
+@pytest.fixture(scope="session")
+def rag_service(foundation_model, 
+        embedding_model,
+        rag_guidelines_service,
+        response_processing_service):
+    return RetrievalAugmentedGenerationResponseService(
+        foundation_model, 
+        embedding_model,
+        rag_guidelines_service,
+        response_processing_service)
 
 @pytest.fixture(scope="session")
 def text_generation_response_service(foundation_model):
