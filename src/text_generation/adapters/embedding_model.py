@@ -1,5 +1,5 @@
 from langchain_huggingface import HuggingFaceEmbeddings
-from src.text_generation.adapters.llm.abstract_embedding_model import AbstractEmbeddingModel
+from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 
 
 class EmbeddingModel(AbstractEmbeddingModel):

@@ -1,5 +1,3 @@
-import sys
-
 from dependency_injector.wiring import Provide, inject
 from src.text_generation.dependency_injection_container import DependencyInjectionContainer
 from src.text_generation.entrypoints.server import RestApiServer

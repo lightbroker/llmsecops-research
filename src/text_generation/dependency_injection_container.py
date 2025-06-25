@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 
-from src.text_generation.adapters.llm.embedding_model import EmbeddingModel
-from src.text_generation.adapters.llm.language_model import LanguageModel
+from src.text_generation.adapters.embedding_model import EmbeddingModel
+from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
 from src.text_generation.entrypoints.server import RestApiServer
 from src.text_generation.services.language_models.text_generation_response_service import TextGenerationResponseService
@@ -20,8 +20,8 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         filename='test.log'
     )
 
-    language_model = providers.Singleton(
-        LanguageModel
+    foundation_model = providers.Singleton(
+        TextGenerationFoundationModel
     )
 
     embedding_model = providers.Singleton(
@@ -49,7 +49,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
 
     text_generation_response_service = providers.Factory(
         TextGenerationResponseService,
-        language_model
+        foundation_model
     )
 
     api_controller = providers.Factory(

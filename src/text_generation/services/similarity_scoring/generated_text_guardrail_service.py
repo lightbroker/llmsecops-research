@@ -1,7 +1,7 @@
 import numpy
 from sklearn.metrics.pairwise import cosine_similarity
 
-from src.text_generation.adapters.llm.abstract_embedding_model import AbstractEmbeddingModel
+from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 from src.text_generation.services.similarity_scoring.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
 
 
