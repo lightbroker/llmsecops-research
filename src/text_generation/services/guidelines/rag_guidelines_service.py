@@ -6,14 +6,13 @@ from src.text_generation.common.constants import Constants
 from src.text_generation.services.guidelines.abstract_rag_guidelines_service import AbstractRetrievalAugmentedGenerationGuidelinesService
 from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 
+
 class RetrievalAugmentedGenerationGuidelinesService(
-        AbstractRetrievalAugmentedGenerationGuidelinesService
-    ):
+        AbstractRetrievalAugmentedGenerationGuidelinesService):
 
     def __init__(
             self,
-            embedding_model: AbstractEmbeddingModel
-        ):
+            embedding_model: AbstractEmbeddingModel):
         self.constants = Constants()
         self.embedding_model = embedding_model
 
@@ -35,6 +34,7 @@ class RetrievalAugmentedGenerationGuidelinesService(
         )
         split_docs = text_splitter.split_documents(data)
 
+        # TODO: log?
         i = 1
         for doc in split_docs:
             print(f'{i}: {doc.page_content}\n\n')

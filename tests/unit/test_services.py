@@ -2,7 +2,7 @@ import logging
 import pytest
 
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
-from src.text_generation.services.language_models.fake_language_model_response_service import FakeLanguageModelResponseService
+from src.text_generation.services.nlp.fake_language_model_response_service import FakeLanguageModelResponseService
 
 
 def test_file_logging_service_has_filehandler():

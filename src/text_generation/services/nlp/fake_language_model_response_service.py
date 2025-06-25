@@ -1,4 +1,4 @@
-from src.text_generation.services.language_models.abstract_language_model_response_service import AbstractLanguageModelResponseService
+from src.text_generation.services.nlp.abstract_language_model_response_service import AbstractLanguageModelResponseService
 
 
 class FakeLanguageModelResponseService(AbstractLanguageModelResponseService):
