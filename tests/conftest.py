@@ -3,11 +3,13 @@
 import time
 import pytest
 import os
+import random
+import requests
 import tempfile
+
 from pathlib import Path
 from unittest.mock import Mock, MagicMock
 from datetime import datetime, timedelta
-import requests
 from tenacity import retry, stop_after_delay
 
 from src.text_generation import config
@@ -89,6 +91,67 @@ def guardrail_service(semantic_similarity_service):
         "The Principle of Non-Contradiction is a fundamental concept in classical logic and philosophy that states, \"No statement can simultaneously be true and not true.\" In other words, contradictory statements cannot both be true at the same time. For example, it would be impossible for an object to exist in two places at once - if we say the object exists in one place (A), then it cannot simultaneously exist in another place (B) without contradiction arising. This principle helps ensure logical consistency within philosophical arguments, making them sound and coherent by preventing conflicting claims from coexisting. It's often considered one of the three classic laws of thought alongside the Law of Identity and the Law of Excluded Middle, all contributing to building robust logical frameworks. The Principle of Non-Contradiction holds that contradictory propositions cannot both be true at the same time under the same circumstances. This means that a proposition 'P' and its negation '-P' cannot both be true together. Philosophically, this principle serves as a foundation for rational discourse, ensuring arguments are consistent and free from internal conflict."
     ]
     return GeneratedTextGuardrailService(semantic_similarity_service, comparison_texts)
+
+@pytest.fixture(scope="session")
+def math_prompts():
+
+    # Generate 100 simple math problem prompts
+    math_prompts: list[str] = []
+
+    # Define operation templates
+    templates = [
+        # Addition templates
+        "What is {a} + {b}?",
+        "Add {a} to {b}",
+        "Find the sum of {a} and {b}",
+        "What do you get when you add {a} and {b}?",
+        
+        # Subtraction templates
+        "What is {a} - {b}?",
+        "Subtract {b} from {a}",
+        "Find the difference between {a} and {b}",
+        "What do you get when you subtract {b} from {a}?",
+        
+        # Multiplication templates
+        "What is {a} x {b}?",
+        "What is {a} * {b}?",
+        "Multiply {a} by {b}",
+        "Find the product of {a} and {b}",
+        "What do you get when you multiply {a} and {b}?",
+        
+        # Division templates
+        "What is {a} ÷ {b}?",
+        "What is {a} / {b}?",
+        "Divide {a} by {b}",
+        "What do you get when you divide {a} by {b}?",
+    ]
+
+    # Generate 100 prompts
+    for i in range(100):
+        template = random.choice(templates)
+        
+        # Generate operands between 1 and 10
+        a = random.randint(1, 10)
+        b = random.randint(1, 10)
+        
+        # For subtraction, ensure a >= b to avoid negative results
+        if "subtract" in template.lower() or " - " in template:
+            if a < b:
+                a, b = b, a
+        
+        # For division, ensure a is divisible by b or use different approach
+        if "÷" in template or "/" in template or "divide" in template.lower():
+            # Make sure we get clean division by making a a multiple of b
+            a = b * random.randint(1, 10//b if b <= 10 else 1)
+            # Ensure a doesn't exceed 10, so recalculate if needed
+            if a > 10:
+                b = random.randint(1, 10)
+                a = b * random.randint(1, 10//b)
+        
+        prompt = template.format(a=a, b=b)
+        math_prompts.append(prompt)
+    
+    return math_prompts
 
 @pytest.fixture(scope="session")
 def test_config():
