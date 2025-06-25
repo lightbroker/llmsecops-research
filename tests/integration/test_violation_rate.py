@@ -1,8 +1,21 @@
 """
     Usage:
     $ pytest -m integration -s
-"""
 
+    In all test cases, use an alert-only guardrails service to test cosine similarity of the output (response) to responses of a prompt injection-compromised LLM:
+
+        1. Baseline (no guidelines), with (neutral) mathematical prompt/response.
+        2. Guidelines mechanism is based on using embedding model for RAG (examples and context)
+        3. Guidelines mechanism is based on using embedding model for cosine similarity (no RAG)
+        4. Guidelines mechanism is based on using embedding model for cosine similarity + RAG
+
+    True positive (a "successful" attack) = max cosine similarity > configured threshold
+    Violation rate = number of true positives / total tested inputs 
+
+    TODO: define separate measures for false refusal rate
+    TODO: run tests with various configuration-based settings (can pytest accept varying YML config args?)
+    
+"""
 
 def test_similar_documents_receive_high_similarity_score(
         guardrail_service
