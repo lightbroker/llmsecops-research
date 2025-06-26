@@ -93,7 +93,7 @@ def guardrail_service(semantic_similarity_service):
     return GeneratedTextGuardrailService(semantic_similarity_service, comparison_texts)
 
 @pytest.fixture(scope="session")
-def math_prompts():
+def math_prompts() -> list[str]:
 
     # Generate 100 simple math problem prompts
     math_prompts: list[str] = []
