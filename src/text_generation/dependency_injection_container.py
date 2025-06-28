@@ -4,10 +4,13 @@ from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
 from src.text_generation.entrypoints.server import RestApiServer
-from src.text_generation.services.logging.file_logging_service import FileLoggingService
+from src.text_generation.services.logging.json_web_traffic_logging_service import JSONWebTrafficLoggingService
+from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_response_service import TextGenerationResponseService
 from src.text_generation.services.nlp.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
+from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
+from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService 
 
 
 class DependencyInjectionContainer(containers.DeclarativeContainer):
@@ -16,8 +19,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=['config.yml'])
 
     logging_service = providers.Singleton(
-        FileLoggingService,
-        filename='test.log'
+        JSONWebTrafficLoggingService
     )
 
     foundation_model = providers.Singleton(
@@ -28,9 +30,21 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         EmbeddingModel
     )
     
+    rag_guidelines_service = providers.Factory(
+        RetrievalAugmentedGenerationGuidelinesService,
+        embedding_model=embedding_model
+    )
+
+    response_processing_service = providers.Factory(
+        ResponseProcessingService
+    )
+
     rag_response_service = providers.Factory(
         RetrievalAugmentedGenerationResponseService,
-        embedding_model=embedding_model
+        foundation_model=foundation_model,
+        embedding_model=embedding_model,
+        rag_guidelines_service=rag_guidelines_service,
+        response_processing_service=response_processing_service
     )
 
     # add / implement guidelines svc
@@ -41,9 +55,14 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         'another example'
     ]
 
+    semantic_similarity_service = providers.Factory(
+        SemanticSimilarityService,
+        embedding_model=embedding_model
+    )
+
     generated_text_guardrail_service = providers.Factory(
         GeneratedTextGuardrailService,
-        embedding_model=embedding_model,
+        semantic_similarity_service=semantic_similarity_service,
         comparison_texts=comparison_texts
     )
 
@@ -62,7 +81,6 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
 
     rest_api_server = providers.Factory(
         RestApiServer,
-        logging_service=logging_service,
         listening_port=9999, # config.server.port,
         api_controller=api_controller
     )

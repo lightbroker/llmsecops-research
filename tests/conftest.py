@@ -1,6 +1,8 @@
 # conftest.py - Shared test configuration and fixtures
 
+import json
 import time
+from typing import Any, Dict, List
 import pytest
 import os
 import random
@@ -21,6 +23,26 @@ from src.text_generation.services.nlp.semantic_similarity_service import Semanti
 from src.text_generation.services.nlp.text_generation_response_service import TextGenerationResponseService
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
+
+
+def pytest_deselected(items):
+    """
+    Called when tests are deselected.
+    Prints the nodeid of each deselected test.
+    """
+    if not items:
+        return
+
+    config = items[0].session.config
+    reporter = config.pluginmanager.getplugin("terminalreporter")
+
+    reporter.ensure_newline()
+    reporter.section("DESELECTED TESTS", sep="=", bold=True)
+
+    for item in items:
+        reporter.line(f"Deselected: {item.nodeid}", yellow=True)
+
+    reporter.section("END DESELECTED TESTS", sep="=", bold=True)
 
 # ==============================================================================
 # SESSION-SCOPED FIXTURES (created once per test session)
@@ -152,6 +174,54 @@ def math_prompts() -> list[str]:
         math_prompts.append(prompt)
     
     return math_prompts
+
+
+prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
+
+@pytest.fixture(scope="session")
+def prompt_injection_sample_requests():
+    json_data = load_json_file(prompt_injection_sample_file_path)
+    all_requests = extract_requests(json_data)
+    return all_requests
+
+@pytest.fixture(scope="session")
+def prompt_injection_sample_responses():
+    json_data = load_json_file(prompt_injection_sample_file_path)
+    all_responses = extract_responses(json_data)
+    return all_responses
+
+def load_json_file(file_path: str) -> List[Dict[str, Any]]:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        raise
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in file '{file_path}': {e}")
+        raise
+    except Exception as e:
+        print(f"Error loading file '{file_path}': {e}")
+        raise
+
+def extract_requests(data: List[Dict[str, Any]]) -> List[str]:
+    requests = []
+    for item in data:
+        if 'request' in item:
+            requests.append(item['request'])
+        else:
+            print(f"Warning: Item missing 'request' field: {item}")
+    return requests
+
+def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
+    responses = []
+    for item in data:
+        if 'response' in item:
+            responses.append(item['response'])
+        else:
+            print(f"Warning: Item missing 'response' field: {item}")
+    return responses
 
 @pytest.fixture(scope="session")
 def test_config():
