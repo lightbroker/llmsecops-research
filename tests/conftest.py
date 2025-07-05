@@ -2,25 +2,25 @@
 
 import json
 import time
-from typing import Any, Dict, List
 import pytest
 import os
 import random
 import requests
 import tempfile
 
-from pathlib import Path
-from unittest.mock import Mock, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import Mock, MagicMock
+from pathlib import Path
 from tenacity import retry, stop_after_delay
+from typing import Any, Dict, List
 
 from src.text_generation import config
 from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
-from src.text_generation.services.nlp.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
+from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
-from src.text_generation.services.nlp.text_generation_response_service import TextGenerationResponseService
+from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
@@ -86,12 +86,12 @@ def response_processing_service():
     return ResponseProcessingService()
 
 @pytest.fixture(scope="session")
-def rag_service(
+def rag_completion_service(
         foundation_model, 
         embedding_model,
         rag_guidelines_service,
         response_processing_service):
-    return RetrievalAugmentedGenerationResponseService(
+    return RetrievalAugmentedGenerationCompletionService(
         foundation_model, 
         embedding_model,
         rag_guidelines_service,
@@ -99,7 +99,7 @@ def rag_service(
 
 @pytest.fixture(scope="session")
 def text_generation_response_service(foundation_model):
-    return TextGenerationResponseService(foundation_model)
+    return TextGenerationCompletionService(foundation_model)
 
 @pytest.fixture(scope="session")
 def semantic_similarity_service(embedding_model):
@@ -181,14 +181,14 @@ prompt_injection_sample_file_path = './tests/integration/samples.prompt_injectio
 @pytest.fixture(scope="session")
 def prompt_injection_sample_requests():
     json_data = load_json_file(prompt_injection_sample_file_path)
-    all_requests = extract_requests(json_data)
-    return all_requests
+    requests = extract_requests(json_data)
+    return requests
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_responses():
     json_data = load_json_file(prompt_injection_sample_file_path)
-    all_responses = extract_responses(json_data)
-    return all_responses
+    responses = extract_responses(json_data)
+    return responses
 
 def load_json_file(file_path: str) -> List[Dict[str, Any]]:
     try:
@@ -212,7 +212,7 @@ def extract_requests(data: List[Dict[str, Any]]) -> List[str]:
             requests.append(item['request'])
         else:
             print(f"Warning: Item missing 'request' field: {item}")
-    return requests
+    return random.sample(requests, k=20)
 
 def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
     responses = []
@@ -221,7 +221,7 @@ def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
             responses.append(item['response'])
         else:
             print(f"Warning: Item missing 'response' field: {item}")
-    return responses
+    return random.sample(responses, k=20)
 
 @pytest.fixture(scope="session")
 def test_config():

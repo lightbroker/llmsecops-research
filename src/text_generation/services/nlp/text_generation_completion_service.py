@@ -2,19 +2,21 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
-from src.text_generation.services.nlp.abstract_language_model_response_service import AbstractLanguageModelResponseService
+from src.text_generation.common.constants import Constants
+from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 
 
-class TextGenerationResponseService(AbstractLanguageModelResponseService):
+class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
     
     def __init__(self, foundation_model: AbstractFoundationModel):
         super().__init__()
         self.language_model_pipeline = foundation_model.create_pipeline()
+        self.constants = Constants()
 
     def _extract_assistant_response(self, text):
-        if "<|assistant|>" in text:
-            return text.split("<|assistant|>")[-1].strip()
+        if self.constants.ASSISTANT_TOKEN in text:
+            return text.split(self.constants.ASSISTANT_TOKEN)[-1].strip()
         return text
 
     # TODO - get from config?

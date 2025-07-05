@@ -1,7 +1,7 @@
-from src.text_generation.services.nlp.abstract_language_model_response_service import AbstractLanguageModelResponseService
+from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 
 
-class FakeLanguageModelResponseService(AbstractLanguageModelResponseService):
+class FakeTextGenerationCompletionService(AbstractTextGenerationCompletionService):
     
     def invoke(self, user_prompt: str) -> str:
 

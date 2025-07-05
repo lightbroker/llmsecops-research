@@ -7,5 +7,5 @@ class AbstractRetrievalAugmentedGenerationGuidelinesService(abc.ABC):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def create_context(self, user_prompt: str) -> str:
+    def create_guidelines_context(self, user_prompt: str) -> str:
         raise NotImplementedError

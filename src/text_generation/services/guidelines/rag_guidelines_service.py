@@ -58,7 +58,7 @@ class RetrievalAugmentedGenerationGuidelinesService(
     
     # public methods
 
-    def create_context(self, user_prompt: str) -> str:
+    def create_guidelines_context(self, user_prompt: str) -> str:
         return self._create_context(user_prompt)
 
     def get_prompt_template(self):

@@ -3,13 +3,12 @@ from langchain.prompts import PromptTemplate
 
 from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
-from src.text_generation.services.nlp.abstract_language_model_response_service import AbstractLanguageModelResponseService
+from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.services.guidelines.abstract_rag_guidelines_service import AbstractRetrievalAugmentedGenerationGuidelinesService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
-class RetrievalAugmentedGenerationResponseService(AbstractLanguageModelResponseService):
-
+class RetrievalAugmentedGenerationCompletionService(AbstractTextGenerationCompletionService):
     def __init__(
             self, 
             foundation_model: AbstractFoundationModel,
@@ -32,7 +31,7 @@ class RetrievalAugmentedGenerationResponseService(AbstractLanguageModelResponseS
             template=self.rag_guidelines_service.get_prompt_template(),
             input_variables=["context", "question"]
         )
-        context = self.rag_guidelines_service.create_context(user_prompt)
+        context = self.rag_guidelines_service.create_guidelines_context(user_prompt)
         chain = prompt | self.language_model_pipeline | StrOutputParser()
         raw_response = chain.invoke({
             "context": context,

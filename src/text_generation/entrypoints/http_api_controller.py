@@ -2,7 +2,7 @@ import json
 import traceback
 
 from src.text_generation.services.logging.abstract_web_traffic_logging_service import AbstractWebTrafficLoggingService
-from src.text_generation.services.nlp.abstract_language_model_response_service import AbstractLanguageModelResponseService
+from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
 
 
@@ -11,8 +11,8 @@ class HttpApiController:
     def __init__(
             self, 
             logging_service: AbstractWebTrafficLoggingService,
-            text_generation_response_service: AbstractLanguageModelResponseService,
-            rag_response_service: AbstractLanguageModelResponseService,
+            text_generation_response_service: AbstractTextGenerationCompletionService,
+            rag_response_service: AbstractTextGenerationCompletionService,
             generated_text_guardrail_service: AbstractGeneratedTextGuardrailService
     ):
         self.logging_service = logging_service        

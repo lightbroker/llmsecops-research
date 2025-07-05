@@ -1,7 +1,7 @@
 import abc
 
 
-class AbstractLanguageModelResponseService(abc.ABC):
+class AbstractTextGenerationCompletionService(abc.ABC):
     @abc.abstractmethod
     def invoke(self, user_prompt: str) -> str:
         raise NotImplementedError

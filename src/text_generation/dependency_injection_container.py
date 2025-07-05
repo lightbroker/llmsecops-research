@@ -6,8 +6,8 @@ from src.text_generation.entrypoints.http_api_controller import HttpApiControlle
 from src.text_generation.entrypoints.server import RestApiServer
 from src.text_generation.services.logging.json_web_traffic_logging_service import JSONWebTrafficLoggingService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
-from src.text_generation.services.nlp.text_generation_response_service import TextGenerationResponseService
-from src.text_generation.services.nlp.retrieval_augmented_generation_response_service import RetrievalAugmentedGenerationResponseService
+from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
+from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService 
@@ -40,7 +40,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     )
 
     rag_response_service = providers.Factory(
-        RetrievalAugmentedGenerationResponseService,
+        RetrievalAugmentedGenerationCompletionService,
         foundation_model=foundation_model,
         embedding_model=embedding_model,
         rag_guidelines_service=rag_guidelines_service,
@@ -67,7 +67,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     )
 
     text_generation_response_service = providers.Factory(
-        TextGenerationResponseService,
+        TextGenerationCompletionService,
         foundation_model
     )
 

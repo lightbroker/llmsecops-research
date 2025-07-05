@@ -2,7 +2,7 @@ import logging
 import pytest
 
 from src.text_generation.services.logging.file_logging_service import FileLoggingService
-from src.text_generation.services.nlp.fake_language_model_response_service import FakeLanguageModelResponseService
+from src.text_generation.services.nlp.fake_text_generation_completion_service import FakeTextGenerationCompletionService
 
 
 def test_file_logging_service_has_filehandler():
@@ -13,14 +13,14 @@ def test_file_logging_service_has_filehandler():
 
 
 def test_language_model_response_service_valid_input():
-    svc = FakeLanguageModelResponseService()
+    svc = FakeTextGenerationCompletionService()
     response = svc.invoke('what is 1 + 1?')
     assert response != None
     assert response != ''
 
 
 def test_language_model_response_service_empty_input():
-    svc = FakeLanguageModelResponseService()
+    svc = FakeTextGenerationCompletionService()
 
     with pytest.raises(ValueError):
         _ = svc.invoke(user_prompt='')
