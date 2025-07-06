@@ -24,4 +24,4 @@ def test_guardrail_analyzed_response():
         original="compromised response",
         final="I can't answer that"
     )
-    assert response.is_malicious == True
+    assert response.is_completion_malicious == True

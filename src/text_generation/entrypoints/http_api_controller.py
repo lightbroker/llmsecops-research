@@ -69,7 +69,7 @@ class HttpApiController:
             return [response_body]
 
         response_text = self.text_generation_response_service.invoke(user_prompt=prompt)
-        score = self.generated_text_guardrail_service.is_text_malicious(response_text)
+        score = self.generated_text_guardrail_service.process_generated_text(response_text)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
@@ -96,7 +96,7 @@ class HttpApiController:
             return [response_body]
 
         response_text = self.rag_response_service.invoke(user_prompt=prompt)
-        score = self.generated_text_guardrail_service.is_text_malicious(response_text)
+        score = self.generated_text_guardrail_service.process_generated_text(response_text)
         response_body = self.format_response(response_text)
         
         http_status_code = 200 # make enum
