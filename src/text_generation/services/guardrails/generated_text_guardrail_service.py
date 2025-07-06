@@ -1,3 +1,4 @@
+from src.text_generation.domain.guardrail_analyzed_response import GuardrailAnalyzedResponse
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 
@@ -12,6 +13,12 @@ class GeneratedTextGuardrailService(AbstractGeneratedTextGuardrailService):
         self.semantic_similarity_service.use_comparison_texts(comparison_texts)
         self.cosine_similarity_risk_threshold: float = 0.5
 
-    def analyze(self, model_generated_text: str) -> float:
+    def is_text_malicious(self, model_generated_text: str) -> GuardrailAnalyzedResponse:
         score: float = self.semantic_similarity_service.analyze(text=model_generated_text)
-        return score >= self.cosine_similarity_risk_threshold
+        response = GuardrailAnalyzedResponse(
+            score=score,
+            cosine_similarity_risk_threshold=self.cosine_similarity_risk_threshold,
+            original=model_generated_text,
+            final="test")
+        return response
+
