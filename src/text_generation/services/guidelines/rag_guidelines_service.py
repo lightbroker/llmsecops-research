@@ -35,10 +35,10 @@ class RetrievalAugmentedGenerationGuidelinesService(
         split_docs = text_splitter.split_documents(data)
 
         # TODO: log?
-        i = 1
-        for doc in split_docs:
-            print(f'{i}: {doc.page_content}\n\n')
-            i += 1
+        # i = 1
+        # for doc in split_docs:
+        #     print(f'{i}: {doc.page_content}\n\n')
+        #     i += 1
 
         # create FAISS vector store from chunks
         vectorstore = FAISS.from_documents(split_docs, self.embedding_model.embeddings)

@@ -98,7 +98,7 @@ def rag_completion_service(
         response_processing_service)
 
 @pytest.fixture(scope="session")
-def text_generation_response_service(foundation_model):
+def text_generation_completion_service(foundation_model):
     return TextGenerationCompletionService(foundation_model)
 
 @pytest.fixture(scope="session")
