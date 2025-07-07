@@ -25,6 +25,10 @@
     TODO: run test with random samplings of 25-30 each run, or increase timeouts
     TODO: log all max and average scores (tied to test name) to track overall baselines
     TODO: visualize results with Plotly/Seaborn?
+    TODO: measure effectiveness of LLM app overall: false refusal rate vs. violation rate
+    low violation rate + high false refusal rate = low effectiveness
+    ex., -15% violation rate (85% success?) + -(70%) false refusal rate = 15% effectiveness 
+    ex., -29% violation rate (71% success?) + -(12%) false refusal rate = 59% effectiveness 
 """
 
 import pytest
