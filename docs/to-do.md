@@ -7,8 +7,11 @@
 
 ### Prompt Templates
 
-[   ] Base Phi-3 template
+[ X ] Base Phi-3 template
 [   ] Few Shot template with examples
+
+### Prompt Templates: Supporting Logic
+
 [   ] Support loading prompt injection prompts and completions
 [   ] Correlate template to violation rate
 
@@ -30,7 +33,22 @@
 [   ] measure effectiveness of LLM app overall: false refusal rate vs. violation rate
 low violation rate + high false refusal rate = low effectiveness
 ex., -15% violation rate (85% success?) + -(70%) false refusal rate = 15% effectiveness 
-ex., -29% violation rate (71% success?) + -(12%) false refusal rate = 59% effectiveness 
+ex., -29% violation rate (71% success?) + -(12%) false refusal rate = 59% effectiveness
+[   ] Build test mechanism that loads test results from other runs/tests, analyzes and produces effectiveness metric
+
+
+### Guidelines
+
+[   ] Summarize non-prompt injection portion of the prompt
+[   ] Chain-of-thought: Does the prompt include forceful suggestion?
+[   ] Chain-of-thought: Does the prompt include reverse psychology?
+[   ] Chain-of-thought: Does the prompt include misdirection?
+[   ] Tree-of-thought (???)
+
+### Guardrails
+
+[   ] Reflexion (self-correction)  - must include original prompt
+[   ] Final semantic similarity check after all other guardrails applied
 
 ### Mitigations Applied to CI/CD Pipeline
 
