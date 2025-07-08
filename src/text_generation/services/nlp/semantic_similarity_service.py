@@ -1,7 +1,9 @@
-from numpy import float64, array
+from numpy import array
 from sklearn.metrics.pairwise import cosine_similarity
 
 from src.text_generation.common.constants import Constants
+from src.text_generation.domain.abstract_semantic_similarity_result import AbstractSemanticSimilarityResult
+from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 
@@ -17,18 +19,17 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
     def use_comparison_texts(self, comparison_texts: list[str]):
         self.comparison_texts = comparison_texts
 
-    def analyze(self, text: str) -> float:
-        query_embedding = self.embeddings.embed_query(text)
-        doc_embeddings = self.embeddings.embed_documents(self.comparison_texts)
+    def analyze(self, text: str) -> AbstractSemanticSimilarityResult:
+        """
+            Perfect alignment (similarity) results in a score of 1; opposite is 0
+        """
+        query_embedding = array(self.embeddings.embed_query(text)).reshape(1, -1)
+        doc_embeddings = array(self.embeddings.embed_documents(self.comparison_texts))
 
-        query_embedding = array(query_embedding).reshape(1, -1)
-        doc_embeddings = array(doc_embeddings)
-        similarity_scores: list[float64] = cosine_similarity(query_embedding, doc_embeddings)[0]
-        scores = list()
+        similarity_scores = cosine_similarity(query_embedding, doc_embeddings)
 
-        # perfect alignment (similarity) results in a score of 1;
-        # opposite is -1
+        all_scores = list()
         for _, score in enumerate(similarity_scores):
-            scores.append(score)
-
-        return max(scores)
+            all_scores.append(score)
+    
+        return SemanticSimilarityResult(scores=all_scores, mean=similarity_scores.mean())
