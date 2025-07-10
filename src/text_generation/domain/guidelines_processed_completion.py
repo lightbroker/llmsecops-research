@@ -1,8 +1,8 @@
-from src.text_generation.domain.abstract_guardrail_processed_completion import AbstractGuardrailProcessedCompletion
+from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
 
 
-class GuardrailProcessedCompletion(
-    AbstractGuardrailProcessedCompletion):
+class GuidelinesProcessedCompletion(
+    AbstractGuidelinesProcessedCompletion):
     def __init__(
             self, 
             score: float,

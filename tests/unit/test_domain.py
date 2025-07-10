@@ -1,10 +1,10 @@
 import pytest
-from src.text_generation.domain.guardrail_processed_completion import GuardrailProcessedCompletion
+from src.text_generation.domain.guardrail_processed_completion import GuardrailsProcessedCompletion
 
 
 @pytest.mark.unit
 def test_guardrail_analyzed_response():
-    response = GuardrailProcessedCompletion(
+    response = GuardrailsProcessedCompletion(
         score=0.72839,
         cosine_similarity_risk_threshold=0.5,
         original_completion="compromised response",

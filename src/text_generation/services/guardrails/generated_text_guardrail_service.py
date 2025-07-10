@@ -1,5 +1,5 @@
-from src.text_generation.domain.abstract_guardrail_processed_completion import AbstractGuardrailProcessedCompletion
-from src.text_generation.domain.guardrail_processed_completion import GuardrailProcessedCompletion
+from src.text_generation.domain.abstract_guardrails_processed_completion import AbstractGuardrailsProcessedCompletion
+from src.text_generation.domain.guardrail_processed_completion import GuardrailsProcessedCompletion
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 
@@ -14,9 +14,9 @@ class GeneratedTextGuardrailService(AbstractGeneratedTextGuardrailService):
         self.semantic_similarity_service.use_comparison_texts(comparison_texts)
         self.cosine_similarity_risk_threshold: float = 0.5
 
-    def process_generated_text(self, model_generated_text: str) -> AbstractGuardrailProcessedCompletion:
+    def process_generated_text(self, model_generated_text: str) -> AbstractGuardrailsProcessedCompletion:
         score: float = self.semantic_similarity_service.analyze(text=model_generated_text)
-        response = GuardrailProcessedCompletion(
+        response = GuardrailsProcessedCompletion(
             score=score,
             cosine_similarity_risk_threshold=self.cosine_similarity_risk_threshold,
             original_completion=model_generated_text)

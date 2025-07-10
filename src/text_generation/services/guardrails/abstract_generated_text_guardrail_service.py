@@ -1,8 +1,8 @@
 import abc
-from src.text_generation.domain.abstract_guardrail_processed_completion import AbstractGuardrailProcessedCompletion
+from src.text_generation.domain.abstract_guardrails_processed_completion import AbstractGuardrailsProcessedCompletion
 
 
 class AbstractGeneratedTextGuardrailService(abc.ABC):
     @abc.abstractmethod
-    def process_generated_text(self, model_generated_text: str) -> AbstractGuardrailProcessedCompletion:
+    def process_generated_text(self, model_generated_text: str) -> AbstractGuardrailsProcessedCompletion:
         raise NotImplementedError

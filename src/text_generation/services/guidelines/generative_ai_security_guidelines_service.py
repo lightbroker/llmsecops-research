@@ -1,6 +1,6 @@
 from itertools import product
-from src.text_generation.domain.abstract_guardrail_processed_completion import AbstractGuardrailProcessedCompletion
-from src.text_generation.domain.guardrail_processed_completion import GuardrailProcessedCompletion
+from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
+from src.text_generation.domain.guardrails_processed_completion import GuardrailsProcessedCompletion
 from src.text_generation.services.guidelines.abstract_generative_ai_security_guidelines_service import AbstractGenerativeAiSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 
@@ -14,7 +14,9 @@ class GenerativeAiSecurityGuidelinesService(
     def __init__(
             self,
             prompt_template_service: AbstractPromptTemplateService):
+        # services
         self.prompt_template_service = prompt_template_service
+        # properties
         self.prompt = None
         self.is_chain_of_thought_enforced = False
         self.is_rag_example_usage_enforced = False
@@ -39,7 +41,7 @@ class GenerativeAiSecurityGuidelinesService(
             # Yield the current combination for processing
             yield (cot_enforced, rag_enforced)
 
-    def _process_all_enforced_guardrail_techniques(self) -> AbstractGuardrailProcessedCompletion:
+    def _process_all_enforced_guideline_techniques(self) -> AbstractGuidelinesProcessedCompletion:
         for i, (cot, rag) in enumerate(self.iterate_all_combinations(), 1):
             print(f"\n=== Combination {i}: CoT={cot}, RAG={rag} ===")
             
@@ -69,7 +71,7 @@ class GenerativeAiSecurityGuidelinesService(
         # Reset to original state
         self.is_chain_of_thought_enforced = False
         self.is_rag_example_usage_enforced = False
-        processed_completion = GuardrailProcessedCompletion(
+        processed_completion = GuardrailsProcessedCompletion(
             score=0.5,
             cosine_similarity_risk_threshold=0.7,
             original_completion="test",
@@ -128,11 +130,11 @@ class GenerativeAiSecurityGuidelinesService(
         self.is_rag_example_usage_enforced = True
         return self
 
-    def apply(self) -> AbstractGuardrailProcessedCompletion:
+    def apply(self) -> AbstractGuidelinesProcessedCompletion:
         if not self.prompt:
             raise ValueError("No prompt provided. Use `for_prompt()` to set a prompt before analyzing.")
 
-        self._process_all_enforced_guardrail_techniques()
+        self._process_all_enforced_guideline_techniques()
 
         results = {
             "prompt": self.prompt,

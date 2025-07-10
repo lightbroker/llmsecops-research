@@ -1,6 +1,6 @@
 import abc
 
-from src.text_generation.domain.abstract_guardrail_processed_completion import AbstractGuardrailProcessedCompletion
+from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
 
 
 class AbstractGenerativeAiSecurityGuidelinesService(abc.ABC):
@@ -8,6 +8,10 @@ class AbstractGenerativeAiSecurityGuidelinesService(abc.ABC):
     def for_prompt(self, prompt: str):
         raise NotImplementedError
     
+    @abc.abstractmethod
+    def skip_guidelines(self):
+        raise NotImplementedError
+
     @abc.abstractmethod
     def use_chain_of_thought(self):
         raise NotImplementedError
@@ -17,6 +21,5 @@ class AbstractGenerativeAiSecurityGuidelinesService(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def apply(self) -> AbstractGuardrailProcessedCompletion:
+    def apply(self) -> AbstractGuidelinesProcessedCompletion:
         raise NotImplementedError
-
