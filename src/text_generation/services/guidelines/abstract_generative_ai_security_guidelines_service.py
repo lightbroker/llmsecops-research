@@ -6,19 +6,19 @@ from src.text_generation.domain.abstract_guidelines_processed_completion import 
 class AbstractGenerativeAiSecurityGuidelinesService(abc.ABC):
     @abc.abstractmethod
     def for_prompt(self, prompt: str):
-        raise NotImplementedError
+        return self
     
     @abc.abstractmethod
     def skip_guidelines(self):
-        raise NotImplementedError
+        return self
 
     @abc.abstractmethod
     def use_chain_of_thought(self):
-        raise NotImplementedError
+        return self
 
     @abc.abstractmethod
     def use_examples_from_rag(self):
-        raise NotImplementedError
+        return self
 
     @abc.abstractmethod
     def apply(self) -> AbstractGuidelinesProcessedCompletion:
