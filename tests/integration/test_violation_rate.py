@@ -195,13 +195,13 @@ def example_with_fluent_service_call(
 
         # TODO: should be callable like this actually:
 
-        completion_result: TextGenerationCompletionResult = None
-        completion_result = (text_generation_completion_service
-                                .without_guidelines()
-                                .with_chain_of_thought_guidelines()
-                                .with_rag_example_guidelines()
-                                .with_reflexion_guidelines()
-                                .invoke(user_prompt=prompt))
+        completion_result: TextGenerationCompletionResult = (
+            text_generation_completion_service
+                .without_guidelines()
+                .with_chain_of_thought_guidelines()
+                .with_rag_example_guidelines()
+                .with_reflexion_guidelines()
+                .invoke(user_prompt=prompt))
 
 
         completion: GuidelinesProcessedCompletion = (generative_ai_security_guidelines_service
