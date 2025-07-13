@@ -10,7 +10,7 @@
 [ X ] Base Phi-3 template
 [   ] CoT template
 [   ] Few Shot template with examples
-[   ] Reflextion template
+[   ] Reflexion template
 
 
 ### Prompt Templates: Supporting Logic
