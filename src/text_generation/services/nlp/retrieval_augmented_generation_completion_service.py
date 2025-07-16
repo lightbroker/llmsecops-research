@@ -3,12 +3,15 @@ from langchain.prompts import PromptTemplate
 
 from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
+from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.services.guidelines.abstract_rag_guidelines_service import AbstractRetrievalAugmentedGenerationGuidelinesService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
+from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
-class RetrievalAugmentedGenerationCompletionService(AbstractTextGenerationCompletionService):
+class RetrievalAugmentedGenerationCompletionService(
+        AbstractTextGenerationCompletionService):
     def __init__(
             self, 
             foundation_model: AbstractFoundationModel,
@@ -19,8 +22,8 @@ class RetrievalAugmentedGenerationCompletionService(AbstractTextGenerationComple
         super().__init__()
         self.language_model_pipeline = foundation_model.create_pipeline()
         self.embeddings = embedding_model.embeddings
-        self.rag_guidelines_service = rag_guidelines_service
-        self.response_processing_service = response_processing_service
+        self.rag_guidelines_service: RetrievalAugmentedGenerationGuidelinesService = rag_guidelines_service
+        self.response_processing_service: ResponseProcessingService = response_processing_service
 
     
     def invoke(self, user_prompt: str) -> str:

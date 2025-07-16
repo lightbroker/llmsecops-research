@@ -13,7 +13,12 @@ class PromptTemplateRepository(AbstractPromptTemplateRepository):
         return os.path.join(self.templates_dir, template_filename)
 
     def get(self, id: str) -> PromptTemplate:
-        return load_prompt(self._create_path_from_id(id))
+        try:
+            return load_prompt(self._create_path_from_id(id))
+        except Exception as e:
+            print(e)
+            return None
     
     def add(self, id: str, prompt_template: PromptTemplate) -> None:
-        prompt_template.save(self._create_path_from_id(id))
+        if self.get(id) == None:
+            prompt_template.save(self._create_path_from_id(id))

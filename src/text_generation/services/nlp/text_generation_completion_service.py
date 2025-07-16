@@ -3,6 +3,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 from src.text_generation.common.constants import Constants
+from src.text_generation.services.guidelines.abstract_chain_of_thought_security_guidelines_service import AbstractChainOfThoughtSecurityGuidelinesService
+from src.text_generation.services.guidelines.abstract_reflexion_security_guidelines_service import AbstractReflexionSecurityGuidelinesService
+from src.text_generation.services.guidelines.abstract_retrieval_augmented_generation_context_security_guidelines_service import AbstractRetrievalAugmentedGenerationContextSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
@@ -32,8 +35,8 @@ class TextGenerationCompletionService(
         self._use_reflexion = True
 
     def _extract_assistant_response(self, text):
-        if self.constants.ASSISTANT_TOKEN in text:
-            return text.split(self.constants.ASSISTANT_TOKEN)[-1].strip()
+        if self.constants.PHI_3_ASSISTANT_START_TOKEN in text:
+            return text.split(self.constants.PHI_3_ASSISTANT_START_TOKEN)[-1].strip()
         return text
 
     def without_guidelines(self) -> AbstractTextGenerationCompletionService:

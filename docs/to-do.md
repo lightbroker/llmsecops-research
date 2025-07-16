@@ -8,14 +8,16 @@
 ### Prompt Templates
 
 [ X ] Base Phi-3 template
-[   ] CoT template
 [   ] Few Shot template with examples
+[   ] CoT template
 [   ] Reflexion template
 
 
 ### Prompt Templates: Supporting Logic
 
-[   ] Support loading prompt injection prompts and completions
+[   ] Support loading prompt injection prompts and completions: few shot
+[   ] Support loading prompt injection prompts and completions: CoT
+[   ] Support loading prompt injection prompts and completions: Reflexion
 [   ] Correlate template to violation rate
 
 ### Test Runs
