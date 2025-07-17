@@ -26,7 +26,7 @@ class ChainOfThoughtSecurityGuidelinesService(
 
     def _create_chain(self, prompt_template: PromptTemplate):
         return (
-            { "question": RunnablePassthrough() }
+            { f"{self.constants.INPUT_VARIABLE_TOKEN}": RunnablePassthrough() }
             | prompt_template
             | self.foundation_model_pipeline
             | StrOutputParser()

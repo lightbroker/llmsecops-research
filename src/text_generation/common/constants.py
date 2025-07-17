@@ -3,6 +3,7 @@ class Constants:
     PHI_3_END_TOKEN =             "<|end|>"
     PHI_3_SYSTEM_START_TOKEN =    "<|system|>"
     PHI_3_USER_START_TOKEN =      "<|user|>"
+    INPUT_VARIABLE_TOKEN =        "input"
 
     class PromptTemplateIds:
         PHI_3_MINI_4K_INSTRUCT_BASIC =                      "phi-3-mini-4k-instruct-basic"
