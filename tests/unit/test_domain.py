@@ -1,5 +1,5 @@
 import pytest
-from src.text_generation.domain.guardrail_processed_completion import GuardrailsProcessedCompletion
+from src.text_generation.domain.guardrails_processed_completion import GuardrailsProcessedCompletion
 
 
 @pytest.mark.unit

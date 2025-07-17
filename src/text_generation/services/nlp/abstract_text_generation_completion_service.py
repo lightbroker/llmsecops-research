@@ -7,22 +7,27 @@ class AbstractTextGenerationCompletionService(abc.ABC):
 
     @abc.abstractmethod
     def without_guidelines(self) -> 'AbstractTextGenerationCompletionService':
-        """Skip all security guidelines."""
+        """Skip all security guidelines"""
         raise NotImplementedError
     
     @abc.abstractmethod
     def with_chain_of_thought_guidelines(self) -> 'AbstractTextGenerationCompletionService':
-        """Enable chain of thought security guidelines."""
+        """Enable zero-shot chain-of-thought (CoT) security guidelines"""
         raise NotImplementedError
     
     @abc.abstractmethod
     def with_rag_context_guidelines(self) -> 'AbstractTextGenerationCompletionService':
-        """Enable RAG context security guidelines."""
+        """Enable RAG context security guidelines"""
         raise NotImplementedError
-    
+
     @abc.abstractmethod
-    def with_reflexion_guidelines(self) -> 'AbstractTextGenerationCompletionService':
-        """Enable reflexion security guidelines."""
+    def with_prompt_injection_guidelines(self) -> 'AbstractTextGenerationCompletionService':
+        """Apply security guidelines using few-shot malicious prompt examples"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def with_reflexion_guardrails(self) -> 'AbstractTextGenerationCompletionService':
+        """Apply security guardrails using the reflexion technique"""
         raise NotImplementedError
 
     @abc.abstractmethod

@@ -10,9 +10,9 @@ from src.text_generation.services.nlp.prompt_template_service import PromptTempl
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
-class ChainOfThoughtSecurityGuidelinesService(
+class RetrievalAugmentedGenerationContextSecurityGuidelinesService(
     AbstractSecurityGuidelinesService):
-    """Service for zero-shot chain-of-thought security guidelines."""
+    """Implementation of RAG context security guidelines service."""
     def __init__(
             self,
             foundation_model: AbstractFoundationModel,
@@ -38,7 +38,7 @@ class ChainOfThoughtSecurityGuidelinesService(
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_ZERO_SHOT_CHAIN_OF_THOUGHT
+            template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_EXAMPLES
             prompt_template: PromptTemplate = self.prompt_template_service.get(id=template_id)
             chain = self._create_chain(prompt_template)
             return chain.invoke(user_prompt)

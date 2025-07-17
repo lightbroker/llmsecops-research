@@ -20,8 +20,10 @@ from src.text_generation.adapters.prompt_template_repository import PromptTempla
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.common.constants import Constants
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
+from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
+from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
 from src.text_generation.services.guidelines.generative_ai_security_guidelines_service import GenerativeAiSecurityGuidelinesService
-from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
+from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
 from src.text_generation.services.nlp.prompt_template_service import PromptTemplateService
 from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
@@ -98,11 +100,15 @@ def prompt_template_service(prompt_template_repository):
 
 @pytest.fixture(scope="session")
 def rag_guidelines_service(embedding_model):
-    return RetrievalAugmentedGenerationGuidelinesService(embedding_model)
+    return RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(embedding_model)
 
 @pytest.fixture(scope="session")
-def generative_ai_security_guidelines_service(prompt_template_service):
-    return GenerativeAiSecurityGuidelinesService(prompt_template_service)
+def chain_of_thought_guidelines(prompt_template_service):
+    return ChainOfThoughtSecurityGuidelinesService(prompt_template_service)
+
+@pytest.fixture(scope="session")
+def reflexion_guardrails(prompt_template_service):
+    return ReflexionSecurityGuardrailsService(prompt_template_service)
 
 @pytest.fixture(scope="session")
 def response_processing_service():
@@ -121,8 +127,18 @@ def rag_completion_service(
         response_processing_service)
 
 @pytest.fixture(scope="session")
-def text_generation_completion_service(foundation_model):
-    return TextGenerationCompletionService(foundation_model)
+def text_generation_completion_service(
+        foundation_model,
+        prompt_template_service,
+        chain_of_thought_guidelines,
+        rag_context_guidelines,
+        reflexion_guardrails):
+    return TextGenerationCompletionService(
+        foundation_model=foundation_model,
+        prompt_template_service=prompt_template_service,
+        chain_of_thought_guidelines=chain_of_thought_guidelines,
+        rag_context_guidelines=rag_context_guidelines,
+        reflexion_guardrails=reflexion_guardrails)
 
 @pytest.fixture(scope="session")
 def semantic_similarity_service(embedding_model):

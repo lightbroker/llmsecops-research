@@ -1,15 +1,20 @@
 from dependency_injector import containers, providers
 
 from src.text_generation.adapters.embedding_model import EmbeddingModel
+from src.text_generation.adapters.prompt_template_repository import PromptTemplateRepository
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
 from src.text_generation.entrypoints.server import RestApiServer
+from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
+from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
+from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RetrievalAugmentedGenerationContextSecurityGuidelinesService
 from src.text_generation.services.logging.json_web_traffic_logging_service import JSONWebTrafficLoggingService
+from src.text_generation.services.nlp.prompt_template_service import PromptTemplateService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
 from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
-from src.text_generation.services.guidelines.rag_guidelines_service import RetrievalAugmentedGenerationGuidelinesService
+from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService 
 
 
@@ -31,7 +36,7 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     )
     
     rag_guidelines_service = providers.Factory(
-        RetrievalAugmentedGenerationGuidelinesService,
+        RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder,
         embedding_model=embedding_model
     )
 
@@ -47,13 +52,14 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         response_processing_service=response_processing_service
     )
 
-    # add / implement guidelines svc
-    
-    # TODO placeholder; replace with responses from garak runs
-    comparison_texts = [
-        'something here',
-        'another example'
-    ]
+    prompt_template_repository = providers.Factory(
+        PromptTemplateRepository
+    )
+
+    prompt_template_service = providers.Factory(
+        PromptTemplateService,
+        prompt_template_repository=prompt_template_repository
+    )
 
     semantic_similarity_service = providers.Factory(
         SemanticSimilarityService,
@@ -62,19 +68,36 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
 
     generated_text_guardrail_service = providers.Factory(
         GeneratedTextGuardrailService,
-        semantic_similarity_service=semantic_similarity_service,
-        comparison_texts=comparison_texts
+        semantic_similarity_service=semantic_similarity_service
     )
 
-    text_generation_response_service = providers.Factory(
+    chain_of_thought_guidelines = providers.Factory(
+        ChainOfThoughtSecurityGuidelinesService
+    )
+    
+    rag_context_guidelines = providers.Factory(
+        RetrievalAugmentedGenerationContextSecurityGuidelinesService,
+        embedding_model=embedding_model
+    )
+    
+    reflexion_guardrails = providers.Factory(
+        ReflexionSecurityGuardrailsService
+    )
+    
+    # Main service
+    text_generation_completion_service = providers.Factory(
         TextGenerationCompletionService,
-        foundation_model
+        foundation_model=foundation_model,
+        prompt_template_service=prompt_template_service,
+        chain_of_thought_guidelines=chain_of_thought_guidelines,
+        rag_context_guidelines=rag_context_guidelines,
+        reflexion_guardrails=reflexion_guardrails
     )
 
     api_controller = providers.Factory(
         HttpApiController,
         logging_service=logging_service,
-        text_generation_response_service=text_generation_response_service,
+        text_generation_response_service=text_generation_completion_service,
         rag_response_service=rag_response_service,
         generated_text_guardrail_service=generated_text_guardrail_service
     )

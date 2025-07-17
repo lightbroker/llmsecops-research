@@ -2,7 +2,8 @@ from src.text_generation.common.constants import Constants
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
-class ResponseProcessingService(AbstractResponseProcessingService):
+class ResponseProcessingService(
+    AbstractResponseProcessingService):
 
     def __init__(self):
         self.constants = Constants()
