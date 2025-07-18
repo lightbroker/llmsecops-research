@@ -11,4 +11,5 @@ class Constants:
         PHI_3_MINI_4K_INSTRUCT_BASIC =                      "phi-3-mini-4k-instruct-basic"
         PHI_3_MINI_4K_INSTRUCT_ZERO_SHOT_CHAIN_OF_THOUGHT = "phi-3-mini-4k-instruct-zero-shot-cot"
         PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_EXAMPLES =          "phi-3-mini-4k-instruct-few-shot"
+        PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_RAG_PLUS_COT =      "phi-3-mini-4k-instruct-few-shot-rag-plus-cot"
         PHI_3_MINI_4K_INSTRUCT_REFLEXION =                  "phi-3-mini-4k-instruct-reflexion"

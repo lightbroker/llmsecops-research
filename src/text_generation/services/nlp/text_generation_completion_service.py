@@ -29,6 +29,7 @@ class TextGenerationCompletionService(
             prompt_template_service: AbstractPromptTemplateService,
             chain_of_thought_guidelines: AbstractSecurityGuidelinesService,
             rag_context_guidelines: AbstractSecurityGuidelinesService,
+            rag_plus_cot_guidelines: AbstractSecurityGuidelinesService,
             reflexion_guardrails: AbstractGeneratedTextGuardrailService,
             semantic_similarity_service: AbstractSemanticSimilarityService,
             prompt_injection_example_service: AbstractPromptInjectionExampleService):
@@ -46,9 +47,10 @@ class TextGenerationCompletionService(
         # guidelines services
         self.chain_of_thought_guidelines: AbstractSecurityGuidelinesService = chain_of_thought_guidelines
         self.rag_context_guidelines: AbstractSecurityGuidelinesService = rag_context_guidelines
+        self.rag_plus_cot_guidelines: AbstractSecurityGuidelinesService = rag_plus_cot_guidelines
         
         # guardrails services
-        self.reflexion_guardrails: AbstractSecurityGuidelinesService = reflexion_guardrails
+        self.reflexion_guardrails: AbstractGeneratedTextGuardrailService = reflexion_guardrails
 
         # constants
         self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.5
@@ -67,7 +69,7 @@ class TextGenerationCompletionService(
         }
 
         # default guardrails settings
-        self._use_reflexion = False
+        self._use_reflexion_guardrails = False
 
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
         guidelines_config = (
@@ -117,28 +119,43 @@ class TextGenerationCompletionService(
         return completion_result
 
     # Handler methods for each guidelines combination
-    def _handle_cot_and_rag(self, user_prompt: str):
+    def _handle_cot_and_rag(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=True"""
-        return f"CoT+RAG:"
+        guidelines_result = self.rag_plus_cot_guidelines.apply_guidelines(user_prompt)
+        return self._process_guidelines_result(guidelines_result)
 
-    def _handle_cot_only(self, user_prompt: str):
+    def _handle_cot_only(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=False"""
         guidelines_result = self.chain_of_thought_guidelines.apply_guidelines(user_prompt)
         return self._process_guidelines_result(guidelines_result)
     
-    def _handle_rag_only(self, user_prompt: str):
+    def _handle_rag_only(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=True"""
         guidelines_result = self.rag_context_guidelines.apply_guidelines(user_prompt)
         return self._process_guidelines_result(guidelines_result)
     
-    def _handle_without_guidelines(self, user_prompt: str):
+    def _handle_without_guidelines(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=False"""
         try:
             chain = self._create_chain_without_guidelines()
-            return chain.invoke(user_prompt)
+            completion = chain.invoke(user_prompt)
+            return TextGenerationCompletionResult(
+                original_completion=completion
+            )
         except Exception as e:
             raise e
-        
+
+    def _handle_reflexion_guardrails(self, text_generation_completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
+        raise NotImplementedError
+        try:
+            chain = self._create_chain_without_guidelines()
+            completion = chain.invoke(user_prompt)
+            return TextGenerationCompletionResult(
+                original_completion=completion
+            )
+        except Exception as e:
+            raise e
+
     # Configuration methods
     def set_config(self, use_cot=False, use_rag=False):
         """Set guidelines configuration"""
@@ -165,7 +182,7 @@ class TextGenerationCompletionService(
         return self
 
     def with_reflexion_guardrails(self) -> AbstractTextGenerationCompletionService:
-        self._use_reflexion = True
+        self._use_reflexion_guardrails = True
         return self
 
     def _create_chain_without_guidelines(self):
@@ -180,7 +197,10 @@ class TextGenerationCompletionService(
             | self.response_processing_service.process_text_generation_output
         )
 
-    def invoke(self, user_prompt: str) -> str:
+    def invoke(self, user_prompt: str) -> TextGenerationCompletionResult:
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
-        self._process_prompt_with_guidelines_if_applicable(user_prompt)
+        completion_result: TextGenerationCompletionResult = self._process_prompt_with_guidelines_if_applicable(user_prompt)
+        if not self._use_reflexion_guardrails:
+            return completion_result
+        return self._handle_reflexion_guardrails(completion_result)

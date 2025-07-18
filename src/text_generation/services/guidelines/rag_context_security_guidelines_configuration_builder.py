@@ -8,12 +8,12 @@ from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.common.constants import Constants
 from src.text_generation.ports.abstract_prompt_injection_example_repository import AbstractPromptInjectionExampleRepository
 from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
-from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractRetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
+from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 
 
 class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
-        AbstractRetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder):
+        AbstractSecurityGuidelinesConfigurationBuilder):
 
     def __init__(
             self,

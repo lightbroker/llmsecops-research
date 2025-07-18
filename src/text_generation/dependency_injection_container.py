@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from src.text_generation.adapters.embedding_model import EmbeddingModel
+from src.text_generation.adapters.prompt_injection_example_repository import PromptInjectionExampleRepository
 from src.text_generation.adapters.prompt_template_repository import PromptTemplateRepository
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
@@ -11,10 +12,12 @@ from src.text_generation.services.guidelines.rag_context_security_guidelines_con
 from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService, RetrievalAugmentedGenerationContextSecurityGuidelinesService
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
+from src.text_generation.services.guidelines.rag_plus_cot_security_guidelines_service import RagPlusCotSecurityGuidelinesService
 from src.text_generation.services.logging.json_web_traffic_logging_service import JSONWebTrafficLoggingService
 from src.text_generation.services.nlp.prompt_template_service import PromptTemplateService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
+from src.text_generation.services.prompt_injection.prompt_injection_example_service import PromptInjectionExampleService
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService 
 
 
@@ -71,6 +74,10 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         semantic_similarity_service=semantic_similarity_service
     )
 
+    rag_config_builder = providers.Factory(
+        RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
+    )
+
     # Register security guideline services
     chain_of_thought_guidelines = providers.Factory(
         ChainOfThoughtSecurityGuidelinesService,
@@ -83,21 +90,41 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         RagContextSecurityGuidelinesService,
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,
-        prompt_template_service=prompt_template_service
+        prompt_template_service=prompt_template_service,
+        config_builder=rag_config_builder
     ).provides(AbstractSecurityGuidelinesService)
     
     reflexion_guardrails = providers.Factory(
         ReflexionSecurityGuardrailsService
     )
     
-    # Main service
+    prompt_injection_example_repository = providers.Factory(
+        PromptInjectionExampleRepository
+    )
+
+    prompt_injection_example_service = providers.Factory(
+        PromptInjectionExampleService,
+        repository=prompt_injection_example_repository
+    )
+
+    rag_plus_cot_guidelines = providers.Factory(
+        RagPlusCotSecurityGuidelinesService,
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,
+        prompt_template_service=prompt_template_service
+    )
+
     text_generation_completion_service = providers.Factory(
         TextGenerationCompletionService,
         foundation_model=foundation_model,
+        response_processing_service=response_processing_service,
         prompt_template_service=prompt_template_service,
         chain_of_thought_guidelines=chain_of_thought_guidelines,
         rag_context_guidelines=rag_context_guidelines,
-        reflexion_guardrails=reflexion_guardrails
+        rag_plus_cot_guidelines=rag_plus_cot_guidelines,
+        reflexion_guardrails=reflexion_guardrails,
+        semantic_similarity_service=semantic_similarity_service,
+        prompt_injection_example_service=prompt_injection_example_service
     )
 
     api_controller = providers.Factory(

@@ -6,8 +6,11 @@ from src.text_generation.services.guidelines.base_security_guidelines_service im
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
-class RagContextSecurityGuidelinesService(BaseSecurityGuidelinesService):
-    """Service for RAG context security guidelines."""
+class RagPlusCotSecurityGuidelinesService(BaseSecurityGuidelinesService):
+    """
+    Service that combines Retrieval Augmented Generation (RAG) with 
+    Chain of Thought (CoT) security guidelines.
+    """
 
     def __init__(
             self,
@@ -29,8 +32,15 @@ class RagContextSecurityGuidelinesService(BaseSecurityGuidelinesService):
         Returns:
             StringPromptTemplate: Template configured for RAG processing
         """
-        template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_EXAMPLES
-        return self.config_builder.get_prompt_template(
-            template_id=template_id,
-            user_prompt=user_prompt
+        return self.prompt_template_service.get(
+            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_RAG_PLUS_COT
         )
+
+    def _get_template_id(self) -> str:
+        """
+        Get template ID for combined RAG + CoT processing.
+        
+        Returns:
+            str: Template ID for RAG + CoT security guidelines
+        """
+        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_RAG_PLUS_COT
