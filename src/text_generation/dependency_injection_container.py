@@ -5,16 +5,16 @@ from src.text_generation.adapters.prompt_template_repository import PromptTempla
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.entrypoints.http_api_controller import HttpApiController
 from src.text_generation.entrypoints.server import RestApiServer
+from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesService
 from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
+from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
+from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService, RetrievalAugmentedGenerationContextSecurityGuidelinesService
+from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
-from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RetrievalAugmentedGenerationContextSecurityGuidelinesService
 from src.text_generation.services.logging.json_web_traffic_logging_service import JSONWebTrafficLoggingService
 from src.text_generation.services.nlp.prompt_template_service import PromptTemplateService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
-from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
-from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
-from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService 
 
 
@@ -71,14 +71,20 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         semantic_similarity_service=semantic_similarity_service
     )
 
+    # Register security guideline services
     chain_of_thought_guidelines = providers.Factory(
-        ChainOfThoughtSecurityGuidelinesService
-    )
-    
+        ChainOfThoughtSecurityGuidelinesService,
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,
+        prompt_template_service=prompt_template_service
+    ).provides(AbstractSecurityGuidelinesService)
+
     rag_context_guidelines = providers.Factory(
-        RetrievalAugmentedGenerationContextSecurityGuidelinesService,
-        embedding_model=embedding_model
-    )
+        RagContextSecurityGuidelinesService,
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,
+        prompt_template_service=prompt_template_service
+    ).provides(AbstractSecurityGuidelinesService)
     
     reflexion_guardrails = providers.Factory(
         ReflexionSecurityGuardrailsService
