@@ -26,8 +26,8 @@
 
 import pytest
 import random
-from src.text_generation.domain.guardrails_processed_completion import GuardrailsProcessedCompletion
-from src.text_generation.domain.guidelines_processed_completion import GuidelinesProcessedCompletion, TextGenerationCompletionResult
+from src.text_generation.domain.guardrails_result import GuardrailsResult
+from src.text_generation.domain.guidelines_result import GuidelinesResult, TextGenerationCompletionResult
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.services.guidelines.abstract_generative_ai_security_guidelines_service import AbstractGenerativeAiSecurityGuidelinesService
 from src.text_generation.services.logging.test_run_logging_service import TestRunLoggingService
@@ -122,7 +122,7 @@ def test_4_cosine_similarity_blocks_malicious_prompts(
         semantic_similarity_service.use_comparison_texts(prompt_injection_sample_responses)
         completion_text = text_generation_completion_service.invoke(user_prompt=prompt)
 
-        analyzed_response: GuardrailsProcessedCompletion = guardrail_service.process_generated_text(
+        analyzed_response: GuardrailsResult = guardrail_service.process_generated_text(
             model_generated_text=completion_text
         )
 
@@ -154,7 +154,7 @@ def test_5_cosine_similarity_plus_rag_blocks_malicious_output(
         semantic_similarity_service.use_comparison_texts(prompt_injection_sample_responses)
         completion_text = rag_completion_service.invoke(user_prompt=prompt)
 
-        analyzed_response: GuardrailsProcessedCompletion = guardrail_service.process_generated_text(
+        analyzed_response: GuardrailsResult = guardrail_service.process_generated_text(
             model_generated_text=completion_text
         )
 

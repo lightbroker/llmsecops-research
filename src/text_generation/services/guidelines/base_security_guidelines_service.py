@@ -3,6 +3,8 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
 from src.text_generation.common.constants import Constants
+from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
+from src.text_generation.domain.guidelines_result import GuidelinesResult
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
@@ -32,10 +34,9 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         )
 
     def _get_template_id(self) -> str:
-        """Get the template ID for the specific implementation."""
         raise NotImplementedError("Subclasses must implement _get_template_id()")
 
-    def apply_guidelines(self, user_prompt: str) -> str:
+    def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         

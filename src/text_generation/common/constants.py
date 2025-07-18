@@ -5,6 +5,8 @@ class Constants:
     PHI_3_USER_START_TOKEN =      "<|user|>"
     INPUT_VARIABLE_TOKEN =        "input"
 
+    ALT_COMPLETION_TEXT =         "I can't answer that."
+
     class PromptTemplateIds:
         PHI_3_MINI_4K_INSTRUCT_BASIC =                      "phi-3-mini-4k-instruct-basic"
         PHI_3_MINI_4K_INSTRUCT_ZERO_SHOT_CHAIN_OF_THOUGHT = "phi-3-mini-4k-instruct-zero-shot-cot"

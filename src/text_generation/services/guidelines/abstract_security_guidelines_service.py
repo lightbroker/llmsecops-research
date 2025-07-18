@@ -1,9 +1,11 @@
 import abc
 
+from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
+
 
 class AbstractSecurityGuidelinesService(abc.ABC):
     @abc.abstractmethod
-    def apply_guidelines(self, user_prompt: str) -> str:
+    def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
         pass
 
 
