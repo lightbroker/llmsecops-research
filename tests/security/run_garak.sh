@@ -1,4 +1,4 @@
-export GARAK_PROBE='ansiescape.AnsiEscaped'
+export GARAK_PROBE='dan.DAN_Jailbreak'
 
 garak -vvv \
     --config ./garak.config.yml \

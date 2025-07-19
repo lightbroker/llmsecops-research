@@ -30,7 +30,7 @@ git lfs install
 pip install -r ./requirements.txt
 
 # environment variables
-export GARAK_PROBE='ansiescape.AnsiEscaped'
+export GARAK_PROBE='dan.DAN_Jailbreak'
 export PROMPT_TEMPLATES_DIR="./infrastructure/prompt_templates"
 export MODEL_BASE_DIR="./infrastructure/foundation_model"
 export MODEL_CPU_DIR="cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4"
