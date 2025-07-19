@@ -9,7 +9,7 @@ from src.text_generation.entrypoints.server import RestApiServer
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesService
 from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
 from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
-from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService, RetrievalAugmentedGenerationContextSecurityGuidelinesService
+from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
 from src.text_generation.services.guidelines.rag_plus_cot_security_guidelines_service import RagPlusCotSecurityGuidelinesService
@@ -37,23 +37,6 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     embedding_model = providers.Singleton(
         EmbeddingModel
     )
-    
-    rag_guidelines_service = providers.Factory(
-        RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder,
-        embedding_model=embedding_model
-    )
-
-    response_processing_service = providers.Factory(
-        ResponseProcessingService
-    )
-
-    rag_response_service = providers.Factory(
-        RetrievalAugmentedGenerationCompletionService,
-        foundation_model=foundation_model,
-        embedding_model=embedding_model,
-        rag_guidelines_service=rag_guidelines_service,
-        response_processing_service=response_processing_service
-    )
 
     prompt_template_repository = providers.Factory(
         PromptTemplateRepository
@@ -62,6 +45,15 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     prompt_template_service = providers.Factory(
         PromptTemplateService,
         prompt_template_repository=prompt_template_repository
+    )
+
+    prompt_injection_example_repository = providers.Factory(
+        PromptInjectionExampleRepository
+    )
+
+
+    response_processing_service = providers.Factory(
+        ResponseProcessingService
     )
 
     semantic_similarity_service = providers.Factory(
@@ -75,7 +67,10 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
     )
 
     rag_config_builder = providers.Factory(
-        RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
+        RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder,
+        embedding_model=embedding_model,
+        prompt_template_service=prompt_template_service,
+        prompt_injection_example_repository=prompt_injection_example_repository
     )
 
     # Register security guideline services
@@ -83,8 +78,9 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         ChainOfThoughtSecurityGuidelinesService,
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,
-        prompt_template_service=prompt_template_service
-    ).provides(AbstractSecurityGuidelinesService)
+        prompt_template_service=prompt_template_service,
+        config_builder=None
+    )
 
     rag_context_guidelines = providers.Factory(
         RagContextSecurityGuidelinesService,
@@ -92,8 +88,8 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         response_processing_service=response_processing_service,
         prompt_template_service=prompt_template_service,
         config_builder=rag_config_builder
-    ).provides(AbstractSecurityGuidelinesService)
-    
+    )
+
     reflexion_guardrails = providers.Factory(
         ReflexionSecurityGuardrailsService
     )
@@ -111,7 +107,8 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         RagPlusCotSecurityGuidelinesService,
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,
-        prompt_template_service=prompt_template_service
+        prompt_template_service=prompt_template_service,
+        config_builder=rag_config_builder
     )
 
     text_generation_completion_service = providers.Factory(
@@ -131,7 +128,6 @@ class DependencyInjectionContainer(containers.DeclarativeContainer):
         HttpApiController,
         logging_service=logging_service,
         text_generation_response_service=text_generation_completion_service,
-        rag_response_service=rag_response_service,
         generated_text_guardrail_service=generated_text_guardrail_service
     )
 

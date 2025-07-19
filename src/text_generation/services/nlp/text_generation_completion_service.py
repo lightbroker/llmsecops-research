@@ -9,9 +9,6 @@ from src.text_generation.domain.semantic_similarity_result import SemanticSimila
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesService
-from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
-from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
-from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RetrievalAugmentedGenerationContextSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
@@ -200,6 +197,7 @@ class TextGenerationCompletionService(
     def invoke(self, user_prompt: str) -> TextGenerationCompletionResult:
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
+        print(f'Using guidelines: {self.get_current_config()}')
         completion_result: TextGenerationCompletionResult = self._process_prompt_with_guidelines_if_applicable(user_prompt)
         if not self._use_reflexion_guardrails:
             return completion_result

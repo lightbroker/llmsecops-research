@@ -21,11 +21,6 @@ class AbstractTextGenerationCompletionService(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def with_prompt_injection_guidelines(self) -> 'AbstractTextGenerationCompletionService':
-        """Apply security guidelines using few-shot malicious prompt examples"""
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def with_reflexion_guardrails(self) -> 'AbstractTextGenerationCompletionService':
         """Apply security guardrails using the reflexion technique"""
         raise NotImplementedError

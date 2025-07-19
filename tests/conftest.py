@@ -16,22 +16,25 @@ from typing import Any, Dict, List
 
 from src.text_generation import config
 from src.text_generation.adapters.embedding_model import EmbeddingModel
+from src.text_generation.adapters.prompt_injection_example_repository import PromptInjectionExampleRepository
 from src.text_generation.adapters.prompt_template_repository import PromptTemplateRepository
 from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.common.constants import Constants
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
 from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
-from src.text_generation.services.guidelines.generative_ai_security_guidelines_service import GenerativeAiSecurityGuidelinesService
 from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
+from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService
+from src.text_generation.services.guidelines.rag_plus_cot_security_guidelines_service import RagPlusCotSecurityGuidelinesService
 from src.text_generation.services.nlp.prompt_template_service import PromptTemplateService
-from src.text_generation.services.nlp.retrieval_augmented_generation_completion_service import RetrievalAugmentedGenerationCompletionService
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
+from src.text_generation.services.prompt_injection.prompt_injection_example_service import PromptInjectionExampleService
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
-MAX_SAMPLE_COUNT = 5
+MAX_REQUEST_SAMPLE_COUNT = 2
+MAX_RESPONSE_SAMPLE_COUNT = 50
 
 def pytest_deselected(items):
     """
@@ -99,46 +102,92 @@ def prompt_template_service(prompt_template_repository):
     return PromptTemplateService(prompt_template_repository)
 
 @pytest.fixture(scope="session")
-def rag_guidelines_service(embedding_model):
-    return RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(embedding_model)
+def prompt_injection_example_repository():
+    return PromptInjectionExampleRepository()
 
 @pytest.fixture(scope="session")
-def chain_of_thought_guidelines(prompt_template_service):
-    return ChainOfThoughtSecurityGuidelinesService(prompt_template_service)
+def rag_config_builder(
+        embedding_model,
+        prompt_template_service,
+        prompt_injection_example_repository):
+    return RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
+        embedding_model=embedding_model,
+        prompt_template_service=prompt_template_service,
+        prompt_injection_example_repository=prompt_injection_example_repository
+    )
 
 @pytest.fixture(scope="session")
-def reflexion_guardrails(prompt_template_service):
-    return ReflexionSecurityGuardrailsService(prompt_template_service)
+def rag_context_guidelines(
+        foundation_model,
+        response_processing_service,
+        prompt_template_service,
+        rag_config_builder):
+    return RagContextSecurityGuidelinesService(
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,    
+        prompt_template_service=prompt_template_service,
+        config_builder=rag_config_builder
+    )
+
+@pytest.fixture(scope="session")
+def chain_of_thought_guidelines(
+        foundation_model,
+        response_processing_service,
+        prompt_template_service):
+    return ChainOfThoughtSecurityGuidelinesService(
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,    
+        prompt_template_service=prompt_template_service
+    )
+
+@pytest.fixture(scope="session")
+def rag_plus_cot_guidelines(
+        foundation_model,
+        response_processing_service,
+        prompt_template_service,
+        rag_config_builder):
+    return RagPlusCotSecurityGuidelinesService(
+        foundation_model=foundation_model,
+        response_processing_service=response_processing_service,    
+        prompt_template_service=prompt_template_service,
+        config_builder=rag_config_builder
+    )
+
+@pytest.fixture(scope="session")
+def prompt_injection_example_service(prompt_injection_example_repository):
+    return PromptInjectionExampleService(repository=prompt_injection_example_repository)
+
+@pytest.fixture(scope="session")
+def reflexion_guardrails():
+    return ReflexionSecurityGuardrailsService()
 
 @pytest.fixture(scope="session")
 def response_processing_service():
     return ResponseProcessingService()
 
-@pytest.fixture(scope="session")
-def rag_completion_service(
-        foundation_model, 
-        embedding_model,
-        rag_guidelines_service,
-        response_processing_service):
-    return RetrievalAugmentedGenerationCompletionService(
-        foundation_model, 
-        embedding_model,
-        rag_guidelines_service,
-        response_processing_service)
 
 @pytest.fixture(scope="session")
 def text_generation_completion_service(
         foundation_model,
+        response_processing_service,
         prompt_template_service,
         chain_of_thought_guidelines,
         rag_context_guidelines,
-        reflexion_guardrails):
+        rag_plus_cot_guidelines,
+        reflexion_guardrails,
+        semantic_similarity_service,
+        prompt_injection_example_service):
     return TextGenerationCompletionService(
         foundation_model=foundation_model,
+        response_processing_service=response_processing_service,
         prompt_template_service=prompt_template_service,
         chain_of_thought_guidelines=chain_of_thought_guidelines,
         rag_context_guidelines=rag_context_guidelines,
-        reflexion_guardrails=reflexion_guardrails)
+        rag_plus_cot_guidelines=rag_plus_cot_guidelines,
+        reflexion_guardrails=reflexion_guardrails,
+        semantic_similarity_service=semantic_similarity_service,
+        prompt_injection_example_service=prompt_injection_example_service
+    )
 
 @pytest.fixture(scope="session")
 def semantic_similarity_service(embedding_model):
@@ -250,7 +299,7 @@ def extract_requests(data: List[Dict[str, Any]]) -> List[str]:
             requests.append(item['request'])
         else:
             print(f"Warning: Item missing 'request' field: {item}")
-    return random.sample(requests, k=MAX_SAMPLE_COUNT)
+    return random.sample(requests, k=MAX_REQUEST_SAMPLE_COUNT)
 
 def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
     responses = []
@@ -259,7 +308,8 @@ def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
             responses.append(item['response'])
         else:
             print(f"Warning: Item missing 'response' field: {item}")
-    return random.sample(responses, k=MAX_SAMPLE_COUNT)
+    count = min(len(responses), MAX_RESPONSE_SAMPLE_COUNT)
+    return random.sample(responses, k=count)
 
 @pytest.fixture(scope="session")
 def test_config():

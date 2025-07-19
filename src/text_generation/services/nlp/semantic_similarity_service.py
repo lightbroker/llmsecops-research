@@ -23,6 +23,7 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
         """
             Perfect alignment (similarity) results in a score of 1; opposite is 0
         """
+        print(f'===== Using {len(self.comparison_texts)} comparison texts')
         query_embedding = array(self.embeddings.embed_query(text)).reshape(1, -1)
         doc_embeddings = array(self.embeddings.embed_documents(self.comparison_texts))
 
