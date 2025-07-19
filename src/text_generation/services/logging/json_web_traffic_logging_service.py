@@ -11,9 +11,12 @@ from src.text_generation.services.logging.abstract_web_traffic_logging_service i
 
 class JSONWebTrafficLoggingService(AbstractWebTrafficLoggingService):
     def __init__(self):
+        vulnerability_test_category = os.getenv('GARAK_PROBE')
+        if not vulnerability_test_category:
+            raise ValueError('Unable to determine test category')
         self._lock = threading.Lock()
         timestamp = calendar.timegm(time.gmtime())
-        self.log_file_path = f"http_logs_{timestamp}.json"
+        self.log_file_path = f"http_logs_{timestamp}__{vulnerability_test_category}.json"
         self._ensure_log_file_exists()
 
     def _ensure_log_file_exists(self):
