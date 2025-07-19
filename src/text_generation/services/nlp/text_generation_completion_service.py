@@ -186,6 +186,10 @@ class TextGenerationCompletionService(
         prompt_template = self.prompt_template_service.get(
             id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_BASIC
         )
+
+        if prompt_template is None:
+            raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_BASIC}")
+    
         return (
             { "question": RunnablePassthrough() }
             | prompt_template

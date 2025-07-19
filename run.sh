@@ -30,10 +30,12 @@ git lfs install
 pip install -r ./requirements.txt
 
 # environment variables
+export PROMPT_TEMPLATES_DIR="./infrastructure/prompt_templates"
 export MODEL_BASE_DIR="./infrastructure/foundation_model"
 export MODEL_CPU_DIR="cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4"
 MODEL_DATA_FILENAME="phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx.data"
 MODEL_DATA_FILEPATH="$MODEL_BASE_DIR/$MODEL_CPU_DIR/$MODEL_DATA_FILENAME"
+
 
 # get foundation model dependencies from HuggingFace / Microsoft
 if [ ! -f "$MODEL_DATA_FILEPATH" ]; then

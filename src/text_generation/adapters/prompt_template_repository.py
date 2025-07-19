@@ -13,10 +13,11 @@ class PromptTemplateRepository(AbstractPromptTemplateRepository):
         return os.path.join(self.templates_dir, template_filename)
 
     def get(self, id: str) -> PromptTemplate:
+        path = self._create_path_from_id(id)
         try:
-            return load_prompt(self._create_path_from_id(id))
+            return load_prompt(path)
         except Exception as e:
-            print(e)
+            print(f'Failed to load template from path "{path}":\n{e}')
             return None
     
     def add(self, id: str, prompt_template: PromptTemplate) -> None:
