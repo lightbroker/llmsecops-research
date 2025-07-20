@@ -1,4 +1,4 @@
-export GARAK_PROBE='grandma.Substances'
+export GARAK_PROBE='grandma.Win11'
 
 garak -vvv \
     --config ./garak.config.yml \

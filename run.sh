@@ -31,8 +31,8 @@ fi
 
 # environment variables
 
-export GARAK_PROBE='grandma.Substances'
-# export GARAK_PROBE='grandma.Win11'
+
+export GARAK_PROBE='grandma.Win11'
 # export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetEiffel'
 # export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
 # export GARAK_PROBE='latentinjection.LatentInjectionReport'
