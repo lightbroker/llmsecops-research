@@ -1,4 +1,4 @@
-export GARAK_PROBE='latentinjection.LatentWhois'
+export GARAK_PROBE='malwaregen.Evasion'
 
 garak -vvv \
     --config ./garak.config.yml \
