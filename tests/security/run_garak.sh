@@ -1,4 +1,4 @@
-export GARAK_PROBE='dan.DAN_Jailbreak'
+export GARAK_PROBE='exploitation.SQLInjectionEcho'
 
 garak -vvv \
     --config ./garak.config.yml \
