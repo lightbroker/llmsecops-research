@@ -1,5 +1,4 @@
-export GARAK_PROBE='goodside.Tag'
-
+export GARAK_PROBE='grandma.Substances'
 
 garak -vvv \
     --config ./garak.config.yml \

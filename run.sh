@@ -31,10 +31,7 @@ fi
 
 # environment variables
 
-export GARAK_PROBE='goodside.Tag'
-# export GARAK_PROBE='goodside.ThreatenJSON'
-# export GARAK_PROBE='goodside.WhoIsRiley'
-# export GARAK_PROBE='grandma.Substances'
+export GARAK_PROBE='grandma.Substances'
 # export GARAK_PROBE='grandma.Win11'
 # export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetEiffel'
 # export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
