@@ -1,4 +1,5 @@
-export GARAK_PROBE='exploitation.SQLInjectionSystem'
+export GARAK_PROBE='goodside.Tag'
+
 
 garak -vvv \
     --config ./garak.config.yml \
