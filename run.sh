@@ -31,11 +31,7 @@ pip install -r ./requirements.txt
 
 # environment variables
 
-
-
-# export GARAK_PROBE='exploitation.JinjaTemplatePythonInjection'
-export GARAK_PROBE='exploitation.SQLInjectionEcho'
-# export GARAK_PROBE='exploitation.SQLInjectionSystem'
+export GARAK_PROBE='exploitation.SQLInjectionSystem'
 # export GARAK_PROBE='fileformats.HF_Files'
 # export GARAK_PROBE='glitch.Glitch'
 # export GARAK_PROBE='goodside.Davidjl'

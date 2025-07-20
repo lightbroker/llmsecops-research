@@ -1,4 +1,4 @@
-export GARAK_PROBE='exploitation.SQLInjectionEcho'
+export GARAK_PROBE='exploitation.SQLInjectionSystem'
 
 garak -vvv \
     --config ./garak.config.yml \
