@@ -1,4 +1,4 @@
-export GARAK_PROBE='malwaregen.Evasion'
+export GARAK_PROBE='snowball.Primes'
 
 garak -vvv \
     --config ./garak.config.yml \
