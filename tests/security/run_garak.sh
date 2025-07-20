@@ -1,4 +1,4 @@
-export GARAK_PROBE='grandma.Win11'
+export GARAK_PROBE='latentinjection.LatentWhois'
 
 garak -vvv \
     --config ./garak.config.yml \

@@ -32,18 +32,14 @@ fi
 # environment variables
 
 
-export GARAK_PROBE='grandma.Win11'
-# export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetEiffel'
 # export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
 # export GARAK_PROBE='latentinjection.LatentInjectionReport'
 # export GARAK_PROBE='latentinjection.LatentInjectionResume'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnFr'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnZh'
 # export GARAK_PROBE='latentinjection.LatentJailbreak'
-# export GARAK_PROBE='latentinjection.LatentWhois'
+export GARAK_PROBE='latentinjection.LatentWhois'
 # export GARAK_PROBE='latentinjection.LatentWhoisSnippet'
-# export GARAK_PROBE='leakreplay.GuardianCloze'
-# export GARAK_PROBE='leakreplay.GuardianComplete'
 # export GARAK_PROBE='leakreplay.NYTCloze'
 # export GARAK_PROBE='leakreplay.NYTComplete'
 # export GARAK_PROBE='malwaregen.Evasion'
