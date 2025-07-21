@@ -1,4 +1,4 @@
-export GARAK_PROBE='snowball.Primes'
+export GARAK_PROBE='topic.WordnetAllowedWords'
 
 garak -vvv \
     --config ./garak.config.yml \
