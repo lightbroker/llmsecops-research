@@ -37,7 +37,7 @@ fi
 # export GARAK_PROBE='latentinjection.LatentInjectionResume'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnFr'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnZh'
-export GARAK_PROBE='latentinjection.LatentJailbreak'
+export GARAK_PROBE='phrasing.FutureTense'
 # export GARAK_PROBE='latentinjection.LatentWhoisSnippet'
 # export GARAK_PROBE='leakreplay.NYTCloze'
 # export GARAK_PROBE='leakreplay.NYTComplete'

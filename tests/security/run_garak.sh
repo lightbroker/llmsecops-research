@@ -1,4 +1,5 @@
-export GARAK_PROBE='latentinjection.LatentJailbreak'
+export GARAK_PROBE='phrasing.FutureTense'
+
 
 garak -vvv \
     --config ./garak.config.yml \
