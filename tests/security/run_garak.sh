@@ -1,4 +1,4 @@
-export GARAK_PROBE='promptinject.HijackHateHumans'
+export GARAK_PROBE='malwaregen.Payload'
 
 garak -vvv \
     --config ./garak.config.yml \
