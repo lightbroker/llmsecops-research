@@ -1,4 +1,4 @@
-export GARAK_PROBE='malwaregen.Payload'
+export GARAK_PROBE='latentinjection.LatentJailbreak'
 
 garak -vvv \
     --config ./garak.config.yml \
