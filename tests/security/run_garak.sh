@@ -1,4 +1,4 @@
-export GARAK_PROBE='topic.WordnetAllowedWords'
+export GARAK_PROBE='promptinject.HijackHateHumans'
 
 garak -vvv \
     --config ./garak.config.yml \
