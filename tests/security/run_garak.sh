@@ -1,4 +1,4 @@
-export GARAK_PROBE='promptinject.HijackKillHumans'
+export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
 
 
 garak -vvv \

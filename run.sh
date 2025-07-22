@@ -32,7 +32,7 @@ fi
 # environment variables
 
 
-# export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
+export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
 # export GARAK_PROBE='latentinjection.LatentInjectionReport'
 # export GARAK_PROBE='latentinjection.LatentInjectionResume'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnFr'
@@ -43,7 +43,6 @@ fi
 # export GARAK_PROBE='malwaregen.TopLevel'
 # export GARAK_PROBE='phrasing.FutureTense'
 # export GARAK_PROBE='phrasing.PastTense'
-export GARAK_PROBE='promptinject.HijackKillHumans'
 # export GARAK_PROBE='promptinject.HijackLongPrompt'
 # export GARAK_PROBE='snowball.GraphConnectivity'
 # export GARAK_PROBE='snowball.Senators'
