@@ -1,4 +1,4 @@
-export GARAK_PROBE='phrasing.FutureTense'
+export GARAK_PROBE='promptinject.HijackKillHumans'
 
 
 garak -vvv \
