@@ -1,4 +1,4 @@
-export GARAK_PROBE='latentinjection.LatentInjectionFactSnippetLegal'
+export GARAK_PROBE='latentinjection.LatentInjectionReport'
 
 
 garak -vvv \
