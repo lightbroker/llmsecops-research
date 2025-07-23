@@ -1,4 +1,4 @@
-export GARAK_PROBE='latentinjection.LatentInjectionReport'
+export GARAK_PROBE='latentinjection.LatentInjectionResume'
 
 
 garak -vvv \

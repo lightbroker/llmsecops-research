@@ -31,11 +31,7 @@ fi
 
 # environment variables
 
-
-
-
-export GARAK_PROBE='latentinjection.LatentInjectionReport'
-# export GARAK_PROBE='latentinjection.LatentInjectionResume'
+export GARAK_PROBE='latentinjection.LatentInjectionResume'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnFr'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnZh'
 # export GARAK_PROBE='latentinjection.LatentWhoisSnippet'
