@@ -263,7 +263,8 @@ def math_prompts() -> list[str]:
     return math_prompts
 
 
-prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
+# prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
+prompt_injection_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_requests():
