@@ -1,6 +1,6 @@
 """
     Usage:
-    $ pytest -k test_00_benign_prompts_no_mitigation -s
+    $ pytest -k test_01_malicious_prompts_no_mitigation -s
 
     Data used:
         1. Samples of compromised output (resulting from NVIDIA garak tests)

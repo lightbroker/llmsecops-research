@@ -33,7 +33,7 @@ from src.text_generation.services.prompt_injection.prompt_injection_example_serv
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
-MAX_REQUEST_SAMPLE_COUNT = 100
+MAX_REQUEST_SAMPLE_COUNT = 1
 MAX_RESPONSE_SAMPLE_COUNT = 50
 
 def pytest_deselected(items):

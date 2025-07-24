@@ -1,10 +1,11 @@
 from typing import Optional
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, StringPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
+from src.text_generation.domain.guidelines_result import GuidelinesResult
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder, AbstractSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
@@ -51,6 +52,10 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         try:
             prompt_template = self._get_template()
             chain = self._create_chain(prompt_template)
-            return chain.invoke(user_prompt)
+            result = GuidelinesResult(
+                completion_text=chain.invoke(user_prompt),
+                llm_config=chain.steps[1].model_dump()
+            )
+            return result
         except Exception as e:
             raise e

@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
@@ -93,17 +93,17 @@ class TextGenerationCompletionService(
             self.example_prompt_injection_completions
         )
         similarity_result: SemanticSimilarityResult = self.semantic_similarity_service.analyze(
-            text=guidelines_result.original_completion
+            text=guidelines_result.completion_text
         )
         
         processed_guidelines_result = GuidelinesResult(
-            original_completion=guidelines_result.original_completion,
+            completion_text=guidelines_result.completion_text,
             cosine_similarity_score=similarity_result.mean,
             cosine_similarity_risk_threshold=self.COSINE_SIMILARITY_RISK_THRESHOLD
         )
         
         completion_result = TextGenerationCompletionResult(
-            original_completion=guidelines_result.original_completion,
+            original_completion=guidelines_result.completion_text,
             guidelines_result=processed_guidelines_result
         )
         
@@ -135,10 +135,11 @@ class TextGenerationCompletionService(
         """Handle: CoT=False, RAG=False"""
         try:
             chain = self._create_chain_without_guidelines()
-            completion = chain.invoke(user_prompt)
-            return TextGenerationCompletionResult(
-                original_completion=completion
+            result = GuidelinesResult(
+                completion_text=chain.invoke(user_prompt),
+                llm_config=chain.steps[1].model_dump()
             )
+            return self._process_guidelines_result(result)
         except Exception as e:
             raise e
 

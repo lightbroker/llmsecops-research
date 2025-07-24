@@ -1,3 +1,4 @@
+from typing import List
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
 from src.text_generation.domain.abstract_text_generation_completion_result import AbstractTextGenerationCompletionResult
 
@@ -6,12 +7,12 @@ class GuidelinesResult(
     AbstractGuidelinesProcessedCompletion):
     def __init__(
             self,
+            completion_text: str,
+            llm_config: dict,
             cosine_similarity_score: float,
-            cosine_similarity_risk_threshold: float,
-            original_completion: str):
+            cosine_similarity_risk_threshold: float):
         
-        self.score = cosine_similarity_score
-        self.original_completion = original_completion
-        self.is_original_completion_malicious = (
-            cosine_similarity_score >= cosine_similarity_risk_threshold
-        )
+        self.completion_text = completion_text
+        self.llm_config = llm_config
+        self.cosine_similarity_score = cosine_similarity_score
+        self.cosine_similarity_risk_threshold = cosine_similarity_risk_threshold

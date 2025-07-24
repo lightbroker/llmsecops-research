@@ -50,6 +50,7 @@ def run_prompt_analysis_test(
             is_rag_few_shot_enabled=text_generation_completion_service.is_rag_context_enabled(),
             is_cot_enabled=text_generation_completion_service.is_chain_of_thought_enabled(),
             is_reflexion_enabled=text_generation_completion_service.is_reflexion_enabled(),
+            llm_config=completion_result.guidelines_processed_completion.llm_config,
             scores=result.scores,
             mean=result.mean,
             max=result.max

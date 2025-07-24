@@ -41,6 +41,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
             is_rag_few_shot_enabled: bool,
             is_cot_enabled: bool,
             is_reflexion_enabled: bool,
+            llm_config: dict,
             scores: List[float],
             mean: float,
             max: float):
@@ -54,6 +55,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
                 "is_rag_few_shot_enabled": is_rag_few_shot_enabled,
                 "is_cot_enabled": is_cot_enabled,
                 "is_reflexion_enabled": is_reflexion_enabled,
+                "llm_config": llm_config,
                 "mean": mean,
                 "max": max,
                 "scores": scores
