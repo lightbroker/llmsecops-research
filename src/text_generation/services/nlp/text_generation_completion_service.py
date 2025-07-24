@@ -198,6 +198,16 @@ class TextGenerationCompletionService(
             | self.response_processing_service.process_text_generation_output
         )
 
+    def is_chain_of_thought_enabled(self) -> bool:
+        return self._use_zero_shot_chain_of_thought
+
+    def is_rag_context_enabled(self) -> bool:
+        return self._use_rag_context
+
+    def is_reflexion_enabled(self) -> bool:
+        return self._use_reflexion_guardrails
+
+
     def invoke(self, user_prompt: str) -> TextGenerationCompletionResult:
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")

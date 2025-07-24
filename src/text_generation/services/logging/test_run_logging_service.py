@@ -35,16 +35,28 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
 
     def log_results(
             self, 
+            id: str,
+            prompt: str,
+            completion: str,
+            is_rag_few_shot_enabled: bool,
+            is_cot_enabled: bool,
+            is_reflexion_enabled: bool,
             scores: List[float],
             mean: float,
             max: float):
         with self._lock:
             logs = self._read_logs()
             log_entry = {
-                "scores": scores,
+                "id": id,
+                "timestamp": datetime.now().isoformat(),
+                "prompt": prompt,
+                "completion": completion,
+                "is_rag_few_shot_enabled": is_rag_few_shot_enabled,
+                "is_cot_enabled": is_cot_enabled,
+                "is_reflexion_enabled": is_reflexion_enabled,
                 "mean": mean,
                 "max": max,
-                "timestamp": datetime.now().isoformat()
+                "scores": scores
             }
             logs.append(log_entry)
             self._write_logs(logs)

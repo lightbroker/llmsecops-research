@@ -1,4 +1,4 @@
-from numpy import array
+from numpy import array, ndarray
 from sklearn.metrics.pairwise import cosine_similarity
 
 from src.text_generation.common.constants import Constants
@@ -27,10 +27,5 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
         query_embedding = array(self.embeddings.embed_query(text)).reshape(1, -1)
         doc_embeddings = array(self.embeddings.embed_documents(self.comparison_texts))
 
-        similarity_scores = cosine_similarity(query_embedding, doc_embeddings)
-
-        all_scores = list()
-        for _, score in enumerate(similarity_scores):
-            all_scores.append(score)
-    
-        return SemanticSimilarityResult(scores=all_scores, mean=similarity_scores.mean())
+        similarity_scores: ndarray = cosine_similarity(query_embedding, doc_embeddings)    
+        return SemanticSimilarityResult(scores=similarity_scores.flatten())

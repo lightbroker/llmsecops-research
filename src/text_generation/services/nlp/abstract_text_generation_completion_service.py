@@ -26,5 +26,17 @@ class AbstractTextGenerationCompletionService(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def is_chain_of_thought_enabled(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_rag_context_enabled(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_reflexion_enabled(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def invoke(self, user_prompt: str) -> AbstractTextGenerationCompletionResult:
         raise NotImplementedError

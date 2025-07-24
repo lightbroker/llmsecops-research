@@ -33,7 +33,7 @@ from src.text_generation.services.prompt_injection.prompt_injection_example_serv
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
-MAX_REQUEST_SAMPLE_COUNT = 2
+MAX_REQUEST_SAMPLE_COUNT = 100
 MAX_RESPONSE_SAMPLE_COUNT = 50
 
 def pytest_deselected(items):
@@ -278,6 +278,12 @@ def prompt_injection_sample_responses():
     responses = extract_responses(json_data)
     return responses
 
+@pytest.fixture(scope="session")
+def prompt_injection_all_example_responses():
+    json_data = load_json_file(prompt_injection_sample_file_path)
+    responses = extract_responses(json_data, use_all=True)
+    return responses
+
 def load_json_file(file_path: str) -> List[Dict[str, Any]]:
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -302,13 +308,17 @@ def extract_requests(data: List[Dict[str, Any]]) -> List[str]:
             print(f"Warning: Item missing 'request' field: {item}")
     return random.sample(requests, k=MAX_REQUEST_SAMPLE_COUNT)
 
-def extract_responses(data: List[Dict[str, Any]]) -> List[str]:
+def extract_responses(data: List[Dict[str, Any]], use_all=False) -> List[str]:
     responses = []
     for item in data:
         if 'response' in item:
             responses.append(item['response'])
         else:
             print(f"Warning: Item missing 'response' field: {item}")
+    
+    if use_all:
+        return responses
+
     count = min(len(responses), MAX_RESPONSE_SAMPLE_COUNT)
     return random.sample(responses, k=count)
 
