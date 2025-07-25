@@ -9,10 +9,13 @@ class GuidelinesResult(
             self,
             completion_text: str,
             llm_config: dict,
-            cosine_similarity_score: float,
-            cosine_similarity_risk_threshold: float):
+            cosine_similarity_score: float = 0.0,
+            cosine_similarity_risk_threshold: float = 0.0):
         
         self.completion_text = completion_text
         self.llm_config = llm_config
         self.cosine_similarity_score = cosine_similarity_score
         self.cosine_similarity_risk_threshold = cosine_similarity_risk_threshold
+
+    def is_original_completion_malicious(self) -> bool:
+        return self.cosine_similarity_score >= self.cosine_similarity_risk_threshold

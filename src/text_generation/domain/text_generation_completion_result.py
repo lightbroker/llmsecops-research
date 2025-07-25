@@ -15,10 +15,12 @@ class TextGenerationCompletionResult(
     
     def __init__(
             self, 
+            llm_config: dict,
             original_completion: str,
             guidelines_result: Optional[GuidelinesResult] = None,
             guardrails_result: Optional[GuardrailsResult] = None):
 
+        self.llm_config = llm_config
         self.original_completion = original_completion
         self.guidelines_processed_completion = guidelines_result
         self.guardrails_processed_completion = guardrails_result

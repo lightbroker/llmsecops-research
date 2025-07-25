@@ -52,13 +52,21 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
                 "timestamp": datetime.now().isoformat(),
                 "prompt": prompt,
                 "completion": completion,
-                "is_rag_few_shot_enabled": is_rag_few_shot_enabled,
-                "is_cot_enabled": is_cot_enabled,
-                "is_reflexion_enabled": is_reflexion_enabled,
+                "mitigations_enabled": {
+                    "guidelines": {
+                        "rag_with_few_shot_examples": is_rag_few_shot_enabled,
+                        "chain_of_thought": is_cot_enabled
+                    },
+                    "guardrails": {
+                        "reflexion": is_reflexion_enabled
+                    }
+                },
                 "llm_config": llm_config,
-                "mean": mean,
-                "max": max,
-                "scores": scores
+                "cosine_similarity": {
+                    "mean": mean,
+                    "max": max,
+                    "all_scores": scores
+                }
             }
             logs.append(log_entry)
             self._write_logs(logs)
