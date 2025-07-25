@@ -31,5 +31,5 @@ class ChainOfThoughtSecurityGuidelinesService(BaseSecurityGuidelinesService):
             StringPromptTemplate: Template configured for CoT processing
         """
         return self.prompt_template_service.get(
-            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_ZERO_SHOT_CHAIN_OF_THOUGHT
+            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT
         )

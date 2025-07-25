@@ -36,6 +36,12 @@ from src.text_generation.services.utilities.response_processing_service import R
 MAX_REQUEST_SAMPLE_COUNT = 1
 MAX_RESPONSE_SAMPLE_COUNT = 50
 
+# prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
+INJECTION_PROMPT_SAMPLE_FILE_PATH = './tests/security/tests/results/01_garak_no_guidelines/process_random_requests.output.150_count.json'
+PROMPT_INJECTION_PROMPTS_AND_RESPONSES_SAMPLE_FILE_PATH = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
+
+
+
 def pytest_deselected(items):
     """
     Called when tests are deselected.
@@ -262,32 +268,28 @@ def math_prompts() -> list[str]:
     return math_prompts
 
 
-# prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
-injection_prompt_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/process_random_requests.output.200_count.json'
-
-prompt_injection_prompts_and_responses_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
 
 @pytest.fixture(scope="session")
 def malicious_prompts():
-    json_data = load_json_file(injection_prompt_sample_file_path)
-    requests = extract_requests(json_data)
+    json_data = load_json_file(INJECTION_PROMPT_SAMPLE_FILE_PATH)
+    requests = extract_requests(json_data, use_all=True)
     return requests
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_requests():
-    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
+    json_data = load_json_file(PROMPT_INJECTION_PROMPTS_AND_RESPONSES_SAMPLE_FILE_PATH)
     requests = extract_requests(json_data)
     return requests
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_responses():
-    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
+    json_data = load_json_file(PROMPT_INJECTION_PROMPTS_AND_RESPONSES_SAMPLE_FILE_PATH)
     responses = extract_responses(json_data)
     return responses
 
 @pytest.fixture(scope="session")
 def prompt_injection_all_example_responses():
-    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
+    json_data = load_json_file(PROMPT_INJECTION_PROMPTS_AND_RESPONSES_SAMPLE_FILE_PATH)
     responses = extract_responses(json_data, use_all=True)
     return responses
 

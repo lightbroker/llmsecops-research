@@ -24,7 +24,7 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
         self.embedding_model: EmbeddingModel = embedding_model
         self.prompt_template_service = prompt_template_service
         self.prompt_injection_example_repository = prompt_injection_example_repository
-        self.prompt_template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_EXAMPLES
+        self.prompt_template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES
         self.vectorstore = self._setup_vectorstore()
 
     def _setup_vectorstore(self):

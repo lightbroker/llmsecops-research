@@ -33,7 +33,7 @@ class RagPlusCotSecurityGuidelinesService(BaseSecurityGuidelinesService):
             StringPromptTemplate: Template configured for RAG processing
         """
         return self.prompt_template_service.get(
-            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_RAG_PLUS_COT
+            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT
         )
 
     def _get_template_id(self) -> str:
@@ -43,4 +43,4 @@ class RagPlusCotSecurityGuidelinesService(BaseSecurityGuidelinesService):
         Returns:
             str: Template ID for RAG + CoT security guidelines
         """
-        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_RAG_PLUS_COT
+        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT

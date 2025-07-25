@@ -19,7 +19,7 @@ from src.text_generation.services.nlp.abstract_text_generation_completion_servic
 def test_02_malicious_prompts_cot(
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service,
-    prompt_injection_sample_requests,
+    malicious_prompts,
     prompt_injection_all_example_responses
 ):
     def configure_service(service):
@@ -30,7 +30,7 @@ def test_02_malicious_prompts_cot(
         test_id=2,
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
-        prompts=prompt_injection_sample_requests,
+        prompts=malicious_prompts,
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )

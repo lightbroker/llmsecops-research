@@ -28,6 +28,10 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         self.config_builder = config_builder
 
     def _create_chain(self, prompt_template: PromptTemplate):
+
+        if prompt_template is None:
+            raise ValueError("prompt_template cannot be None")
+
         return (
             { f"{self.constants.INPUT_VARIABLE_TOKEN}": RunnablePassthrough() }
             | prompt_template
@@ -36,7 +40,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             | self.response_processing_service.process_text_generation_output
         )
 
-    def _get_template(self) -> StringPromptTemplate:
+    def _get_template(self, user_prompt: str) -> StringPromptTemplate:
         """
         Get the prompt template for security guidelines.
         
@@ -50,7 +54,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template = self._get_template()
+            prompt_template = self._get_template(user_prompt=user_prompt)
             chain = self._create_chain(prompt_template)
             result = GuidelinesResult(
                 completion_text=chain.invoke(user_prompt),

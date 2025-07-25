@@ -211,11 +211,11 @@ class TextGenerationCompletionService(
 
     def _create_chain_without_guidelines(self):
         prompt_template = self.prompt_template_service.get(
-            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_BASIC
+            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
         )
 
         if prompt_template is None:
-            raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_BASIC}")
+            raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC}")
     
         return (
             { "question": RunnablePassthrough() }

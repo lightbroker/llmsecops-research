@@ -29,7 +29,7 @@ class RagContextSecurityGuidelinesService(BaseSecurityGuidelinesService):
         Returns:
             StringPromptTemplate: Template configured for RAG processing
         """
-        template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT_FEW_SHOT_EXAMPLES
+        template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES
         return self.config_builder.get_prompt_template(
             template_id=template_id,
             user_prompt=user_prompt
