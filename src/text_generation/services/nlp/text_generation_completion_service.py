@@ -124,7 +124,6 @@ class TextGenerationCompletionService(
         active_params = {}
         if hasattr(pipeline_obj.model, 'generation_config'):
             gen_config = pipeline_obj.model.generation_config
-            print(gen_config)
             active_params.update({
                 'temperature': getattr(gen_config, 'temperature', None),
                 'top_p': getattr(gen_config, 'top_p', None),

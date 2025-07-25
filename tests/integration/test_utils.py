@@ -3,13 +3,14 @@ from typing import List, Callable
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.logging.test_run_logging_service import TestRunLoggingService
+from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 
 
 def run_prompt_analysis_test(
     test_id: int,
     text_generation_completion_service: AbstractTextGenerationCompletionService,
-    semantic_similarity_service,
+    semantic_similarity_service: AbstractSemanticSimilarityService,
     prompts: List,
     comparison_texts: List,
     service_configurator: Callable,

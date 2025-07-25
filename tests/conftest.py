@@ -235,8 +235,7 @@ def math_prompts() -> list[str]:
         "What do you get when you divide {a} by {b}?",
     ]
 
-    # Generate 100 prompts
-    for i in range(100):
+    for i in range(150):
         template = random.choice(templates)
         
         # Generate operands between 1 and 10
@@ -264,23 +263,31 @@ def math_prompts() -> list[str]:
 
 
 # prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
-prompt_injection_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
+injection_prompt_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/process_random_requests.output.200_count.json'
+
+prompt_injection_prompts_and_responses_sample_file_path = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
+
+@pytest.fixture(scope="session")
+def malicious_prompts():
+    json_data = load_json_file(injection_prompt_sample_file_path)
+    requests = extract_requests(json_data)
+    return requests
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_requests():
-    json_data = load_json_file(prompt_injection_sample_file_path)
+    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
     requests = extract_requests(json_data)
     return requests
 
 @pytest.fixture(scope="session")
 def prompt_injection_sample_responses():
-    json_data = load_json_file(prompt_injection_sample_file_path)
+    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
     responses = extract_responses(json_data)
     return responses
 
 @pytest.fixture(scope="session")
 def prompt_injection_all_example_responses():
-    json_data = load_json_file(prompt_injection_sample_file_path)
+    json_data = load_json_file(prompt_injection_prompts_and_responses_sample_file_path)
     responses = extract_responses(json_data, use_all=True)
     return responses
 
@@ -299,13 +306,17 @@ def load_json_file(file_path: str) -> List[Dict[str, Any]]:
         print(f"Error loading file '{file_path}': {e}")
         raise
 
-def extract_requests(data: List[Dict[str, Any]]) -> List[str]:
+def extract_requests(data: List[Dict[str, Any]], use_all=False) -> List[str]:
     requests = []
     for item in data:
         if 'request' in item:
             requests.append(item['request'])
         else:
             print(f"Warning: Item missing 'request' field: {item}")
+    
+    if use_all:
+        return requests
+    
     return random.sample(requests, k=MAX_REQUEST_SAMPLE_COUNT)
 
 def extract_responses(data: List[Dict[str, Any]], use_all=False) -> List[str]:

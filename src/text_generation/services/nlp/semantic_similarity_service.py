@@ -17,6 +17,8 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
         self.constants = Constants()
     
     def use_comparison_texts(self, comparison_texts: list[str]):
+        if not comparison_texts:
+            raise ValueError('Comparison texts collection cannot be empty')
         self.comparison_texts = comparison_texts
 
     def analyze(self, text: str) -> AbstractSemanticSimilarityResult:
@@ -25,7 +27,11 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
             orthogonal is 0; 
             opposite is -1
         """
-        print(f'===== Using {len(self.comparison_texts)} comparison texts')
+
+        if not self.comparison_texts:
+            raise ValueError('Comparison texts are required')
+
+        print(f'Using {len(self.comparison_texts)} comparison texts')
         query_embedding = array(self.embeddings.embed_query(text)).reshape(1, -1)
         doc_embeddings = array(self.embeddings.embed_documents(self.comparison_texts))
 

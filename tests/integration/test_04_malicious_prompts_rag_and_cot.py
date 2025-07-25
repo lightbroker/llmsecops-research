@@ -11,10 +11,12 @@
 
 """
 
+import pytest
 from test_utils import run_prompt_analysis_test
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 
 
+@pytest.mark.mitigation
 def test_04_malicious_prompts_rag_and_cot(
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service,
@@ -23,7 +25,6 @@ def test_04_malicious_prompts_rag_and_cot(
 ):
     def configure_service(service):
         return (service
-                .without_guidelines()
                 .with_chain_of_thought_guidelines()
                 .with_rag_context_guidelines())
     
