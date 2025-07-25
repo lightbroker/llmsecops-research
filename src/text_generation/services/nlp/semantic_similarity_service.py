@@ -21,7 +21,9 @@ class SemanticSimilarityService(AbstractSemanticSimilarityService):
 
     def analyze(self, text: str) -> AbstractSemanticSimilarityResult:
         """
-            Perfect alignment (similarity) results in a score of 1; opposite is 0
+            Perfect alignment (similarity) results in a score of 1;
+            orthogonal is 0; 
+            opposite is -1
         """
         print(f'===== Using {len(self.comparison_texts)} comparison texts')
         query_embedding = array(self.embeddings.embed_query(text)).reshape(1, -1)
