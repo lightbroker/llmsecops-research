@@ -54,7 +54,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template = self._get_template(user_prompt=user_prompt)
+            prompt_template = self._get_template(user_prompt=user_prompt)            
             chain = self._create_chain(prompt_template)
             result = GuidelinesResult(
                 completion_text=chain.invoke(user_prompt),
