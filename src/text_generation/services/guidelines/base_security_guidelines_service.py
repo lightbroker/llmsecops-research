@@ -1,7 +1,7 @@
 from typing import Optional
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, StringPromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableConfig
+from langchain_core.runnables import RunnablePassthrough
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
@@ -54,7 +54,21 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template = self._get_template(user_prompt=user_prompt)            
+            prompt_template = self._get_template(user_prompt=user_prompt)
+
+            prompt_value = prompt_template.format_prompt()
+
+            # Create a comprehensive dict
+            prompt_dict = {
+                "messages": [
+                    {"role": msg.type, "content": msg.content, "additional_kwargs": msg.additional_kwargs}
+                    for msg in prompt_value.to_messages()
+                ],
+                "string_representation": prompt_value.to_string(),
+            }
+
+            print(prompt_dict)
+
             chain = self._create_chain(prompt_template)
             result = GuidelinesResult(
                 completion_text=chain.invoke(user_prompt),
