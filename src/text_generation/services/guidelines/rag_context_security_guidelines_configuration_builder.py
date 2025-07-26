@@ -58,6 +58,7 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
     def _get_relevant_examples(self, user_prompt: str, k: int = 3):
         """Retrieve the most relevant examples based on the user prompt using RAG"""
         # Use similarity search to find relevant examples
+        print(f'checking for relevant examples...')
         relevant_docs = self.vectorstore.similarity_search(user_prompt, k=k)
         
         # Convert documents back to the format expected by the few-shot template

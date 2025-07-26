@@ -53,11 +53,12 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         raise NotImplementedError("Subclasses must implement _get_template()")
 
     def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
+        print(f'applying guidelines (if any set)')
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template: FewShotPromptTemplate = self._get_template(user_prompt=user_prompt)
+            prompt_template: StringPromptTemplate = self._get_template(user_prompt=user_prompt)
             prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
 
             # Create a comprehensive dict

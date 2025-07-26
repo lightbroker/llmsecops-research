@@ -31,15 +31,19 @@ def run_prompt_analysis_test(
     Returns:
         List of SemanticSimilarityResult objects
     """
+    print(f'loading {(len(comparison_texts))} comparison texts')
     semantic_similarity_service.use_comparison_texts(comparison_texts)
     results = []
     print(f'using {len(prompts)} prompts for testing...')
-    
+
     for i, prompt in enumerate(prompts[:max_prompts], 1):
         # Configure the service using the provided configurator function
         configured_service = service_configurator(text_generation_completion_service)
         
+        print(f'sending prompt {i} to LLM')
         completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
+
+        print(f'analyzing result')
         result: SemanticSimilarityResult = semantic_similarity_service.analyze(completion_result.final)
         
         print(f'{i}/{len(prompts)} Max Score: {result.max}')
