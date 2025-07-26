@@ -26,21 +26,8 @@ class RagPlusCotSecurityGuidelinesService(BaseSecurityGuidelinesService):
         )
 
     def _get_template(self, user_prompt: str) -> StringPromptTemplate:
-        """
-        Get RAG context security guidelines template.
-        
-        Returns:
-            StringPromptTemplate: Template configured for RAG processing
-        """
-        return self.prompt_template_service.get(
-            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT
+        template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT
+        return self.config_builder.get_prompt_template(
+            template_id=template_id,
+            user_prompt=user_prompt
         )
-
-    def _get_template_id(self) -> str:
-        """
-        Get template ID for combined RAG + CoT processing.
-        
-        Returns:
-            str: Template ID for RAG + CoT security guidelines
-        """
-        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT

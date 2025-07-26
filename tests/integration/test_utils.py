@@ -33,6 +33,7 @@ def run_prompt_analysis_test(
     """
     semantic_similarity_service.use_comparison_texts(comparison_texts)
     results = []
+    print(f'using {len(prompts)} prompts for testing...')
     
     for i, prompt in enumerate(prompts[:max_prompts], 1):
         # Configure the service using the provided configurator function

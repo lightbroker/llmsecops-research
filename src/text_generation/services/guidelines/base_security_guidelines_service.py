@@ -1,7 +1,9 @@
 from typing import Optional
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, StringPromptTemplate
+from langchain_core.prompt_values import PromptValue
 from langchain_core.runnables import RunnablePassthrough
+from langchain.prompts import FewShotPromptTemplate
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
@@ -10,6 +12,7 @@ from src.text_generation.ports.abstract_foundation_model import AbstractFoundati
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder, AbstractSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
+
 
 class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
     """Base service for security guidelines implementations."""
@@ -54,9 +57,8 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template = self._get_template(user_prompt=user_prompt)
-
-            prompt_value = prompt_template.format_prompt()
+            prompt_template: FewShotPromptTemplate = self._get_template(user_prompt=user_prompt)
+            prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
 
             # Create a comprehensive dict
             prompt_dict = {
@@ -67,12 +69,11 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
                 "string_representation": prompt_value.to_string(),
             }
 
-            print(prompt_dict)
-
             chain = self._create_chain(prompt_template)
             result = GuidelinesResult(
-                completion_text=chain.invoke(user_prompt),
-                llm_config=chain.steps[1].model_dump()
+                completion_text=chain.invoke({"input": user_prompt}),
+                llm_config=chain.steps[1].model_dump(),
+                full_prompt=prompt_dict
             )
             return result
         except Exception as e:

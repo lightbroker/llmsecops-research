@@ -37,7 +37,7 @@ MAX_REQUEST_SAMPLE_COUNT = 1
 MAX_RESPONSE_SAMPLE_COUNT = 50
 
 # prompt_injection_sample_file_path = './tests/integration/samples.prompt_injection_true_positive.json'
-INJECTION_PROMPT_SAMPLE_FILE_PATH = './tests/security/tests/results/01_garak_no_guidelines/process_random_requests.output.150_count.json'
+INJECTION_PROMPT_SAMPLE_FILE_PATH = './tests/security/tests/results/01_garak_no_guidelines/process_random_requests.output.100_count.json'
 PROMPT_INJECTION_PROMPTS_AND_RESPONSES_SAMPLE_FILE_PATH = './tests/security/tests/results/01_garak_no_guidelines/failed_entries.json'
 
 
