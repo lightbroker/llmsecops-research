@@ -44,13 +44,13 @@ class PromptInjectionExampleRepository(AbstractPromptInjectionExampleRepository)
                     prompt_keys = ['prompt_injection_prompt']
                     for key in prompt_keys:
                         if key in item:
-                            extracted['prompt_injection_prompt'] = item[key]
+                            extracted['prompt_injection_prompt'] = item[key].replace('{', '').replace('}', '')
                             break
 
                     completion_keys = ['prompt_injection_completion']
                     for key in completion_keys:
                         if key in item:
-                            extracted['prompt_injection_completion'] = item[key]
+                            extracted['prompt_injection_completion'] = item[key].replace('{', '').replace('}', '')
                             break
                     
                     if 'prompt_injection_prompt' in extracted and 'prompt_injection_completion' in extracted:
