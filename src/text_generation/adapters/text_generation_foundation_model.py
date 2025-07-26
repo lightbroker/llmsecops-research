@@ -34,6 +34,7 @@ class TextGenerationFoundationModel(AbstractFoundationModel):
             "text-generation",
             do_sample=True,
             max_new_tokens=512,
+            max_length=1024,
             model=self.model,
             repetition_penalty=1.1,
             temperature=0.3,

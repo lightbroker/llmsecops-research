@@ -52,6 +52,13 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         """
         raise NotImplementedError("Subclasses must implement _get_template()")
 
+    def _find_llm_step(self, chain):
+        if hasattr(chain, 'steps'):
+            for i, step in enumerate(chain.steps):
+                if step.__class__.__name__ == 'HuggingFacePipeline':
+                    return step
+        return None
+
     def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
         print(f'applying guidelines (if any set)')
         if not user_prompt:
@@ -59,6 +66,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         
         try:
             prompt_template: StringPromptTemplate = self._get_template(user_prompt=user_prompt)
+            print(f'got prompt template')
             prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
 
             # Create a comprehensive dict
@@ -70,10 +78,22 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
                 "string_representation": prompt_value.to_string(),
             }
 
+            print(f'creating chain...')
             chain = self._create_chain(prompt_template)
+            print(f'Chain type: {type(chain)}')
+            print(f'Number of steps: {len(chain.steps) if hasattr(chain, "steps") else "No steps attribute"}')
+
+            # Print each step to see what's at each position
+            if hasattr(chain, 'steps'):
+                for i, step in enumerate(chain.steps):
+                    print(f'Step {i}: {type(step)} - {step.__class__.__name__}')
+            print(f'generating completion...')
+            completion_text=chain.invoke({"input": user_prompt})
+            llm_step = self.find_llm_step(chain)
+            llm_config = llm_step.model_dump() if llm_step else {}
             result = GuidelinesResult(
-                completion_text=chain.invoke({"input": user_prompt}),
-                llm_config=chain.steps[1].model_dump(),
+                completion_text=completion_text,
+                llm_config=llm_config,
                 full_prompt=prompt_dict
             )
             return result
