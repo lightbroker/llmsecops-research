@@ -1,6 +1,5 @@
 from typing import Any, List
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
-from src.text_generation.domain.abstract_text_generation_completion_result import AbstractTextGenerationCompletionResult
 
 
 class GuidelinesResult(

@@ -153,15 +153,8 @@ class TextGenerationCompletionService(
             raise e
 
     def _handle_reflexion_guardrails(self, text_generation_completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
-        raise NotImplementedError
-        try:
-            chain = self._create_chain_without_guidelines()
-            completion = chain.invoke(user_prompt)
-            return TextGenerationCompletionResult(
-                original_completion=completion
-            )
-        except Exception as e:
-            raise e
+        result_with_guardrails_applied = self.reflexion_guardrails.apply_guardrails(text_generation_completion_result)
+        return result_with_guardrails_applied
 
     # Configuration methods
     def set_config(self, use_cot=False, use_rag=False):

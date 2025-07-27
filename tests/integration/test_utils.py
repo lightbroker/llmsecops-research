@@ -5,6 +5,7 @@ from src.text_generation.domain.text_generation_completion_result import TextGen
 from src.text_generation.services.logging.test_run_logging_service import TestRunLoggingService
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
+from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
 
 
 def run_prompt_analysis_test(
@@ -38,7 +39,7 @@ def run_prompt_analysis_test(
 
     for i, prompt in enumerate(prompts[:max_prompts], 1):
         # Configure the service using the provided configurator function
-        configured_service = service_configurator(text_generation_completion_service)
+        configured_service: TextGenerationCompletionService = service_configurator(text_generation_completion_service)
         
         print(f'sending prompt {i} to LLM')
         completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
