@@ -1,12 +1,8 @@
-import abc
-
 from src.text_generation.services.utilities.abstract_llm_configuration_introspection_service import AbstractLLMConfigurationIntrospectionService
 
 
 class LLMConfigurationIntrospectionService(
     AbstractLLMConfigurationIntrospectionService):
-    # llm_configuration_introspection_service
-
 
     def get_config(self, lcel_chain, max_depth=10):
         """
@@ -482,7 +478,7 @@ class LLMConfigurationIntrospectionService(
         
         # Group by category with priority for generation params
         categories = {
-            '🔥 CRITICAL Generation Parameters': [],
+            'CRITICAL Generation Parameters': [],
             'Other Generation Parameters': [],
             'Model Configuration': [],
             'API Settings': [],
@@ -497,7 +493,7 @@ class LLMConfigurationIntrospectionService(
             
             # Check if it's a critical parameter
             if any(param in key.lower() for param in critical_param_names):
-                categories['🔥 CRITICAL Generation Parameters'].append((key, value))
+                categories['CRITICAL Generation Parameters'].append((key, value))
                 categorized = True
             elif any(param in key.lower() for param in ['penalty', 'sample', 'beam', 'length']):
                 categories['Other Generation Parameters'].append((key, value))

@@ -55,55 +55,15 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         """
         raise NotImplementedError("Subclasses must implement _get_template()")
 
-    def _find_llm_step(self, chain):
-        if hasattr(chain, 'steps'):
-            for i, step in enumerate(chain.steps):
-                if step.__class__.__name__ == 'HuggingFacePipeline':
-                    return step
-        return None
-
-    def _extract_llm_config(self, llm_step):
-        
-        if not llm_step:
-            return {}
-        
-        full_config = llm_step.model_dump()
-        
-        serializable_keys = [
-            'batch_size', 
-            'device', 
-            'do_sample', 
-            'temperature', 
-            'top_p', 
-            'top_k', 
-            'max_new_tokens', 
-            'max_length',
-            'repetition_penalty', 
-            'pad_token_id', 
-            'eos_token_id',
-            'model_id', 
-            'task', 
-            'return_full_text'
-        ]
-        
-        config = {}
-        for key, value in full_config.items():
-            if key in serializable_keys and isinstance(value, (str, int, float, bool, type(None))):
-                config[key] = value
-        return config
-
 
     def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
-        print(f'applying guidelines (if any set)')
+
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
             prompt_template: StringPromptTemplate = self._get_template(user_prompt=user_prompt)
-            print(f'got prompt template')
             prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
-
-            # Create a comprehensive dict
             prompt_dict = {
                 "messages": [
                     {"role": msg.type, "content": msg.content, "additional_kwargs": msg.additional_kwargs}
@@ -112,21 +72,12 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
                 "string_representation": prompt_value.to_string(),
             }
 
-            print(f'creating chain...')
             chain = self._create_chain(prompt_template)
-            
-            print(f'Chain type: {type(chain)}')
-            print(f'Number of steps: {len(chain.steps) if hasattr(chain, "steps") else "No steps attribute"}')
+            completion_text=chain.invoke({self.constants.INPUT_VARIABLE_TOKEN: user_prompt})
 
-            # Print each step to see what's at each position
-            if hasattr(chain, 'steps'):
-                for i, step in enumerate(chain.steps):
-                    print(f'Step {i}: {type(step)} - {step.__class__.__name__}')
-            print(f'generating completion...')
-            completion_text=chain.invoke({"input": user_prompt})
-            llm_step = self._find_llm_step(chain)
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
             result = GuidelinesResult(
+                user_prompt=user_prompt,
                 completion_text=completion_text,
                 llm_config=llm_config,
                 full_prompt=prompt_dict

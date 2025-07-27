@@ -77,7 +77,6 @@ class TextGenerationCompletionService(
         # introspection for logging
         self.llm_configuration_introspection_service = llm_configuration_introspection_service
 
-        
 
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
         guidelines_config = (
@@ -111,6 +110,7 @@ class TextGenerationCompletionService(
         completion_result = TextGenerationCompletionResult(
             llm_config = guidelines_result.llm_config,
             original_completion = guidelines_result.completion_text,
+            original_user_prompt = guidelines_result.user_prompt,
             guidelines_result = guidelines_result
         )
         
@@ -122,30 +122,6 @@ class TextGenerationCompletionService(
         )
         return completion_result
 
-
-    def _get_active_model_configuration_params(self, hf_pipeline_component):
-
-        pipeline_obj = hf_pipeline_component.pipeline
-        
-        # model defaults
-        active_params = {}
-        if hasattr(pipeline_obj.model, 'generation_config'):
-            gen_config = pipeline_obj.model.generation_config
-            active_params.update({
-                'temperature': getattr(gen_config, 'temperature', None),
-                'top_p': getattr(gen_config, 'top_p', None),
-                'top_k': getattr(gen_config, 'top_k', None),
-                'max_new_tokens': getattr(gen_config, 'max_new_tokens', None),
-                'max_length': getattr(gen_config, 'max_length', None),
-                'repetition_penalty': getattr(gen_config, 'repetition_penalty', None),
-                'do_sample': getattr(gen_config, 'do_sample', None),
-            })
-        
-        # get pipeline-specific override parameters
-        if hasattr(pipeline_obj, '_forward_params'):
-            forward_params = pipeline_obj._forward_params
-            active_params.update(forward_params)     
-        return active_params
 
     # Handler methods for each guidelines combination
     def _handle_cot_and_rag(self, user_prompt: str) -> TextGenerationCompletionResult:
@@ -167,7 +143,7 @@ class TextGenerationCompletionService(
         """Handle: CoT=False, RAG=False"""
         try:
             chain = self._create_chain_without_guidelines()
-            llm_config = self._get_active_model_configuration_params(chain.steps[2])
+            llm_config = self.llm_configuration_introspection_service.get_config(chain)
             result = GuidelinesResult(
                 completion_text = chain.invoke(user_prompt),
                 llm_config = llm_config

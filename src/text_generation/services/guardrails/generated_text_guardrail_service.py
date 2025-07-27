@@ -17,7 +17,7 @@ class GeneratedTextGuardrailService(
     def use_comparison_texts(self, comparison_texts: list[str]):
         self.semantic_similarity_service.use_comparison_texts(comparison_texts)
 
-    def process_generated_text(self, completion: AbstractTextGenerationCompletionResult) -> AbstractGuardrailsProcessedCompletion:
+    def apply_guardrails(self, completion: AbstractTextGenerationCompletionResult) -> AbstractGuardrailsProcessedCompletion:
         score: float = self.semantic_similarity_service.analyze(text=completion)
         response = GuardrailsResult(
             cosine_similarity_score=score,
