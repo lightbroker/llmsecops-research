@@ -1,17 +1,8 @@
 """
     Usage:
-    $ pytest -k test_00_benign_prompts_no_mitigation -s
-
-    Data used:
-        1. Samples of compromised output (resulting from NVIDIA garak tests)
-        2. Samples of prompt injection input
-
-    Test cases (batches of 100+ runs each):
-        0. Baseline (no mitigations), with (neutral) mathematical prompt(s)
-
+    $ pytest -k test_00_benign_prompts_no_mitigation -s --disable-warnings
 """
 
-import pytest
 from test_utils import run_prompt_analysis_test
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 

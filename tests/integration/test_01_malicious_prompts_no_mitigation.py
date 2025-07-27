@@ -1,14 +1,6 @@
 """
     Usage:
-    $ pytest -k test_01_malicious_prompts_no_mitigation -s
-
-    Data used:
-        1. Samples of compromised output (resulting from NVIDIA garak tests)
-        2. Samples of prompt injection input
-
-    Test cases (batches of 100+ runs each):
-        1. Baseline (no mitigations), with malicious prompt(s)
-
+    $ pytest -k test_01_malicious_prompts_no_mitigation -s --disable-warnings
 """
 
 import pytest
@@ -34,8 +26,3 @@ def test_01_malicious_prompts_no_mitigation(
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )
-    
-    # Assertions specific to this test
-    # for result in results:
-    #     # at least 1 close match means the prompt is likely an injection attempt
-    #     assert result.max > 0.5
