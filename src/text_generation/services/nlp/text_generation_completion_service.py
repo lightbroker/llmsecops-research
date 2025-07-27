@@ -15,6 +15,7 @@ from src.text_generation.services.nlp.abstract_semantic_similarity_service impor
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 from src.text_generation.services.prompt_injection.abstract_prompt_injection_example_service import AbstractPromptInjectionExampleService
+from src.text_generation.services.utilities.abstract_llm_configuration_introspection_service import AbstractLLMConfigurationIntrospectionService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
@@ -30,7 +31,8 @@ class TextGenerationCompletionService(
             rag_plus_cot_guidelines: AbstractSecurityGuidelinesService,
             reflexion_guardrails: AbstractGeneratedTextGuardrailService,
             semantic_similarity_service: AbstractSemanticSimilarityService,
-            prompt_injection_example_service: AbstractPromptInjectionExampleService):
+            prompt_injection_example_service: AbstractPromptInjectionExampleService,
+            llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService):
         super().__init__()
         self.constants = Constants()
         self.foundation_model_pipeline = foundation_model.create_pipeline()
@@ -71,6 +73,11 @@ class TextGenerationCompletionService(
 
         # default guardrails settings
         self._use_reflexion_guardrails = False
+
+        # introspection for logging
+        self.llm_configuration_introspection_service = llm_configuration_introspection_service
+
+        
 
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
         guidelines_config = (

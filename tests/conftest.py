@@ -30,6 +30,7 @@ from src.text_generation.services.nlp.prompt_template_service import PromptTempl
 from src.text_generation.services.nlp.semantic_similarity_service import SemanticSimilarityService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
 from src.text_generation.services.prompt_injection.prompt_injection_example_service import PromptInjectionExampleService
+from src.text_generation.services.utilities.llm_configuration_introspection_service import LLMConfigurationIntrospectionService
 from src.text_generation.services.utilities.response_processing_service import ResponseProcessingService
 
 
@@ -172,6 +173,9 @@ def reflexion_guardrails():
 def response_processing_service():
     return ResponseProcessingService()
 
+@pytest.fixture(scope="session")
+def llm_configuration_introspection_service():
+    return LLMConfigurationIntrospectionService()
 
 @pytest.fixture(scope="session")
 def text_generation_completion_service(
@@ -183,7 +187,8 @@ def text_generation_completion_service(
         rag_plus_cot_guidelines,
         reflexion_guardrails,
         semantic_similarity_service,
-        prompt_injection_example_service):
+        prompt_injection_example_service,
+        llm_configuration_introspection_service):
     return TextGenerationCompletionService(
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,
@@ -193,7 +198,8 @@ def text_generation_completion_service(
         rag_plus_cot_guidelines=rag_plus_cot_guidelines,
         reflexion_guardrails=reflexion_guardrails,
         semantic_similarity_service=semantic_similarity_service,
-        prompt_injection_example_service=prompt_injection_example_service
+        prompt_injection_example_service=prompt_injection_example_service,
+        llm_configuration_introspection_service=llm_configuration_introspection_service
     )
 
 @pytest.fixture(scope="session")

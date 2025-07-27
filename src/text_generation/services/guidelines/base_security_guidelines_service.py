@@ -59,6 +59,36 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
                     return step
         return None
 
+    def _extract_llm_config(self, llm_step):
+        if not llm_step:
+            return {}
+        
+        full_config = llm_step.model_dump()
+        
+        serializable_keys = [
+            'batch_size', 
+            'device', 
+            'do_sample', 
+            'temperature', 
+            'top_p', 
+            'top_k', 
+            'max_new_tokens', 
+            'max_length',
+            'repetition_penalty', 
+            'pad_token_id', 
+            'eos_token_id',
+            'model_id', 
+            'task', 
+            'return_full_text'
+        ]
+        
+        config = {}
+        for key, value in full_config.items():
+            if key in serializable_keys and isinstance(value, (str, int, float, bool, type(None))):
+                config[key] = value
+        return config
+
+
     def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
         print(f'applying guidelines (if any set)')
         if not user_prompt:
@@ -89,8 +119,8 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
                     print(f'Step {i}: {type(step)} - {step.__class__.__name__}')
             print(f'generating completion...')
             completion_text=chain.invoke({"input": user_prompt})
-            llm_step = self.find_llm_step(chain)
-            llm_config = llm_step.model_dump() if llm_step else {}
+            llm_step = self._find_llm_step(chain)
+            llm_config = self._extract_llm_config(llm_step)
             result = GuidelinesResult(
                 completion_text=completion_text,
                 llm_config=llm_config,
