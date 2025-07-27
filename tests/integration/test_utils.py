@@ -32,10 +32,10 @@ def run_prompt_analysis_test(
     Returns:
         List of SemanticSimilarityResult objects
     """
-    print(f'loading {(len(comparison_texts))} comparison texts')
     semantic_similarity_service.use_comparison_texts(comparison_texts)
+    print(f'using {len(prompts)} prompts (comparison texts) for testing...')
+
     results = []
-    print(f'using {len(prompts)} prompts for testing...')
 
     for i, prompt in enumerate(prompts[:max_prompts], 1):
         # Configure the service using the provided configurator function
