@@ -125,15 +125,21 @@ def rag_config_builder(
     )
 
 @pytest.fixture(scope="session")
+def llm_configuration_introspection_service():
+    return LLMConfigurationIntrospectionService()
+
+@pytest.fixture(scope="session")
 def rag_context_guidelines(
         foundation_model,
         response_processing_service,
         prompt_template_service,
+        llm_configuration_introspection_service,
         rag_config_builder):
     return RagContextSecurityGuidelinesService(
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,    
         prompt_template_service=prompt_template_service,
+        llm_configuration_introspection_service=llm_configuration_introspection_service,
         config_builder=rag_config_builder
     )
 
@@ -141,10 +147,12 @@ def rag_context_guidelines(
 def chain_of_thought_guidelines(
         foundation_model,
         response_processing_service,
+        llm_configuration_introspection_service,
         prompt_template_service):
     return ChainOfThoughtSecurityGuidelinesService(
         foundation_model=foundation_model,
-        response_processing_service=response_processing_service,    
+        response_processing_service=response_processing_service,
+        llm_configuration_introspection_service=llm_configuration_introspection_service,
         prompt_template_service=prompt_template_service
     )
 
@@ -153,11 +161,13 @@ def rag_plus_cot_guidelines(
         foundation_model,
         response_processing_service,
         prompt_template_service,
+        llm_configuration_introspection_service,
         rag_config_builder):
     return RagPlusCotSecurityGuidelinesService(
         foundation_model=foundation_model,
         response_processing_service=response_processing_service,    
         prompt_template_service=prompt_template_service,
+        llm_configuration_introspection_service=llm_configuration_introspection_service,
         config_builder=rag_config_builder
     )
 

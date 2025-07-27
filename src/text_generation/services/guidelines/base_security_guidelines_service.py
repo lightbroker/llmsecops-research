@@ -11,6 +11,7 @@ from src.text_generation.domain.guidelines_result import GuidelinesResult
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder, AbstractSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
+from src.text_generation.services.utilities.abstract_llm_configuration_introspection_service import AbstractLLMConfigurationIntrospectionService
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
@@ -22,12 +23,14 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             foundation_model: AbstractFoundationModel,
             response_processing_service: AbstractResponseProcessingService,
             prompt_template_service: AbstractPromptTemplateService,
+            llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
             config_builder: Optional[AbstractSecurityGuidelinesConfigurationBuilder] = None):
         super().__init__()
         self.constants = Constants()
         self.foundation_model_pipeline = foundation_model.create_pipeline()
         self.response_processing_service = response_processing_service
         self.prompt_template_service = prompt_template_service
+        self.llm_configuration_introspection_service = llm_configuration_introspection_service
         self.config_builder = config_builder
 
     def _create_chain(self, prompt_template: PromptTemplate):
@@ -60,6 +63,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         return None
 
     def _extract_llm_config(self, llm_step):
+        
         if not llm_step:
             return {}
         
@@ -110,6 +114,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
 
             print(f'creating chain...')
             chain = self._create_chain(prompt_template)
+            
             print(f'Chain type: {type(chain)}')
             print(f'Number of steps: {len(chain.steps) if hasattr(chain, "steps") else "No steps attribute"}')
 
@@ -120,7 +125,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             print(f'generating completion...')
             completion_text=chain.invoke({"input": user_prompt})
             llm_step = self._find_llm_step(chain)
-            llm_config = self._extract_llm_config(llm_step)
+            llm_config = self.llm_configuration_introspection_service.get_config(chain)
             result = GuidelinesResult(
                 completion_text=completion_text,
                 llm_config=llm_config,

@@ -43,6 +43,7 @@ class TextGenerationFoundationModel(AbstractFoundationModel):
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id
         )
+        # TODO: fix Both `max_new_tokens` (=512) and `max_length`(=1024) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
 
         return HuggingFacePipeline(
             pipeline=pipe,
