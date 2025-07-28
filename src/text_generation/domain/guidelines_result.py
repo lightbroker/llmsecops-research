@@ -17,11 +17,11 @@ class GuidelinesResult(AbstractGuidelinesProcessedCompletion):
         cosine_similarity_risk_threshold: float = 0.0
     ):
         self.user_prompt = user_prompt
-        self.completion_text = completion_text
+        self.guidelines_completion_text = completion_text
         self.full_prompt = full_prompt
         self.llm_config = llm_config
         self.cosine_similarity_score = cosine_similarity_score
         self.cosine_similarity_risk_threshold = cosine_similarity_risk_threshold
     
-    def is_original_completion_malicious(self) -> bool:
+    def is_completion_malicious(self) -> bool:
         return self.cosine_similarity_score >= self.cosine_similarity_risk_threshold

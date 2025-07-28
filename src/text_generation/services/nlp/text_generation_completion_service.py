@@ -6,6 +6,7 @@ from langchain_huggingface import HuggingFacePipeline
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
 from src.text_generation.domain.guidelines_result import GuidelinesResult
+from src.text_generation.domain.original_completion_result import OriginalCompletionResult
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
@@ -84,12 +85,15 @@ class TextGenerationCompletionService(
             self._use_rag_context
         )
         guidelines_handler = self.guidelines_strategy_map.get(
-            guidelines_config, 
+            guidelines_config,
+
+            # fall back to unfiltered LLM invocation
             self._handle_without_guidelines
         )
         return guidelines_handler(user_prompt)
-    
-    def _process_guidelines_result(self, guidelines_result: GuidelinesResult) -> TextGenerationCompletionResult:
+
+
+    def _process_completion_result(self, completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
         """
         Process guidelines result and create completion result with semantic similarity check.
         
@@ -100,26 +104,36 @@ class TextGenerationCompletionService(
             TextGenerationCompletionResult with appropriate completion text
         """
 
+        # analyze the current version of the completion text against prompt injection completions;
+        # if guidelines applied, this is the result of completion using guidelines;
+        # otherwise it is the raw completion text without guidelines
+        completion_result.finalize_completion_text()
         similarity_result: SemanticSimilarityResult = self.semantic_similarity_service.analyze(
-            text = guidelines_result.completion_text
+            text = completion_result.final_completion_text
         )
         
-        guidelines_result.cosine_similarity_risk_threshold = self.COSINE_SIMILARITY_RISK_THRESHOLD
-        guidelines_result.cosine_similarity_score = similarity_result.mean
+        if not completion_result.guidelines_result:
+            completion_result.guidelines_result = GuidelinesResult(
+                user_prompt=completion_result.original_result.user_prompt,
+                completion_text=completion_result.original_result.completion_text,
+                llm_config=completion_result.original_result.llm_config
+            )
         
-        completion_result = TextGenerationCompletionResult(
-            llm_config = guidelines_result.llm_config,
-            original_completion = guidelines_result.completion_text,
-            original_user_prompt = guidelines_result.user_prompt,
-            guidelines_result = guidelines_result
-        )
+        # update completion result with similarity scoring threshold and result
+        completion_result.guidelines_result.cosine_similarity_risk_threshold = self.COSINE_SIMILARITY_RISK_THRESHOLD
+        completion_result.guidelines_result.cosine_similarity_score = similarity_result.max
         
-        if not guidelines_result.is_original_completion_malicious():
+        # return raw result if the completion comparison score didn't exceed threshold
+        if not completion_result.guidelines_result.is_completion_malicious():
+            print(f'Guidelines-based completion was NOT malicious. Score: {completion_result.guidelines_result.cosine_similarity_score}')
             return completion_result
     
+        # provide the finalized alternate (refuse to answer)
+        print(f'Guidelines-based completion was malicious. Score: {completion_result.guidelines_result.cosine_similarity_score}')
         completion_result.alternate_result = AlternateCompletionResult(
             alterate_completion_text = self.constants.ALT_COMPLETION_TEXT
         )
+        completion_result.finalize_completion_text()
         return completion_result
 
 
@@ -127,28 +141,31 @@ class TextGenerationCompletionService(
     def _handle_cot_and_rag(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=True"""
         guidelines_result = self.rag_plus_cot_guidelines.apply_guidelines(user_prompt)
-        return self._process_guidelines_result(guidelines_result)
+        return self._process_completion_result(guidelines_result)
 
     def _handle_cot_only(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=False"""
         guidelines_result = self.chain_of_thought_guidelines.apply_guidelines(user_prompt)
-        return self._process_guidelines_result(guidelines_result)
+        return self._process_completion_result(guidelines_result)
     
     def _handle_rag_only(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=True"""
         guidelines_result = self.rag_context_guidelines.apply_guidelines(user_prompt)
-        return self._process_guidelines_result(guidelines_result)
+        return self._process_completion_result(guidelines_result)
     
     def _handle_without_guidelines(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=False"""
         try:
             chain = self._create_chain_without_guidelines()
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
-            result = GuidelinesResult(
-                completion_text = chain.invoke(user_prompt),
-                llm_config = llm_config
-            )
-            return self._process_guidelines_result(result)
+
+            result = TextGenerationCompletionResult(
+                original_result=OriginalCompletionResult(
+                    user_prompt=user_prompt,
+                    completion_text=chain.invoke(user_prompt),
+                    llm_config=llm_config
+            ))
+            return self._process_completion_result(result)
         except Exception as e:
             raise e
 
@@ -216,6 +233,8 @@ class TextGenerationCompletionService(
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         print(f'Using guidelines: {self.get_current_config()}')
         completion_result: TextGenerationCompletionResult = self._process_prompt_with_guidelines_if_applicable(user_prompt)
+        
         if not self._use_reflexion_guardrails:
             return completion_result
+        
         return self._handle_reflexion_guardrails(completion_result)

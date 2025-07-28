@@ -178,11 +178,15 @@ def prompt_injection_example_service(prompt_injection_example_repository):
 @pytest.fixture(scope="session")
 def reflexion_guardrails(
         foundation_model,
+        semantic_similarity_service,
+        prompt_injection_example_service,
         response_processing_service,
         prompt_template_service,
         llm_configuration_introspection_service):
     return ReflexionSecurityGuardrailsService(
         foundation_model=foundation_model,
+        semantic_similarity_service=semantic_similarity_service,
+        prompt_injection_example_service=prompt_injection_example_service,
         response_processing_service=response_processing_service,    
         prompt_template_service=prompt_template_service,
         llm_configuration_introspection_service=llm_configuration_introspection_service

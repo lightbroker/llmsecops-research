@@ -36,12 +36,12 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
     def log_results(
             self, 
             id: str,
-            text_generation_result: str,
-            completion: str,
+            prompt: str,
+            final_completion: str,
             is_rag_few_shot_enabled: bool,
             is_cot_enabled: bool,
             is_reflexion_enabled: bool,
-            llm_config: dict,
+            original_llm_config: dict,
             scores: List[float],
             mean: float,
             max: float):
@@ -50,8 +50,8 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
             log_entry = {
                 "id": id,
                 "timestamp": datetime.now().isoformat(),
-                "prompt": prompt,
-                "completion": completion,
+                "original_prompt": prompt,
+                "final_completion": final_completion,
                 "mitigations_enabled": {
                     "guidelines": {
                         "rag_with_few_shot_examples": is_rag_few_shot_enabled,
@@ -61,7 +61,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
                         "reflexion": is_reflexion_enabled
                     }
                 },
-                "llm_config": llm_config,
+                "original_llm_config": original_llm_config,
                 "cosine_similarity": {
                     "mean": mean,
                     "max": max,

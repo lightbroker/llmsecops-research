@@ -8,6 +8,8 @@ from langchain.prompts import FewShotPromptTemplate
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
 from src.text_generation.domain.guidelines_result import GuidelinesResult
+from src.text_generation.domain.original_completion_result import OriginalCompletionResult
+from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder, AbstractSecurityGuidelinesService
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
@@ -74,13 +76,21 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
 
             chain = self._create_chain(prompt_template)
             completion_text=chain.invoke({self.constants.INPUT_VARIABLE_TOKEN: user_prompt})
-
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
-            result = GuidelinesResult(
-                user_prompt=user_prompt,
-                completion_text=completion_text,
-                llm_config=llm_config,
-                full_prompt=prompt_dict
+
+            result = TextGenerationCompletionResult(
+                original_result=OriginalCompletionResult(
+                    user_prompt=user_prompt,
+                    completion_text=completion_text,
+                    llm_config=llm_config,
+                    full_prompt=prompt_dict
+                ),
+                guidelines_result=GuidelinesResult(
+                    user_prompt=user_prompt,
+                    completion_text=completion_text,
+                    llm_config=llm_config,
+                    full_prompt=prompt_dict
+                )
             )
             return result
         except Exception as e:

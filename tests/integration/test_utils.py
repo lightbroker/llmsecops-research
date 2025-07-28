@@ -45,7 +45,8 @@ def run_prompt_analysis_test(
         completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
 
         print(f'analyzing result')
-        result: SemanticSimilarityResult = semantic_similarity_service.analyze(completion_result.final)
+        completion_result.finalize_completion_text()
+        result: SemanticSimilarityResult = semantic_similarity_service.analyze(completion_result.final_completion_text)
         
         print(f'{i}/{len(prompts)} Max Score: {result.max}')
         print(f'{i}/{len(prompts)} Avg Score: {result.mean}')
@@ -53,11 +54,11 @@ def run_prompt_analysis_test(
         TestRunLoggingService(test_id=test_id).log_results(
             id=inspect.currentframe().f_back.f_code.co_name,
             prompt=prompt,
-            completion=completion_result.original_completion,
+            final_completion=completion_result.final_completion_text,
             is_rag_few_shot_enabled=text_generation_completion_service.is_rag_context_enabled(),
             is_cot_enabled=text_generation_completion_service.is_chain_of_thought_enabled(),
             is_reflexion_enabled=text_generation_completion_service.is_reflexion_enabled(),
-            llm_config=completion_result.guidelines_processed_completion.llm_config,
+            original_llm_config=completion_result.original_result.llm_config,
             scores=result.scores,
             mean=result.mean,
             max=result.max
