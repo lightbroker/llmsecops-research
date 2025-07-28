@@ -8,6 +8,6 @@ from src.text_generation.domain.abstract_semantic_similarity_result import Abstr
 class SemanticSimilarityResult(AbstractSemanticSimilarityResult):
     def __init__(self, scores: ndarray):
         super().__init__()
-        self.scores: List[float] = scores.tolist()
-        self.mean: float = float(scores.mean())
         self.max: float = float(scores.max()) 
+        self.mean: float = float(scores.mean())
+        self.scores: List[float] = scores.tolist()

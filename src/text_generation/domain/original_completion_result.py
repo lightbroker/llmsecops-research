@@ -19,7 +19,7 @@ class OriginalCompletionResult(AbstractTextGenerationCompletionResult):
         self.completion_text = completion_text
         self.full_prompt = full_prompt
         self.llm_config = llm_config
-        self.cosine_similarity_risk_threshold: float = 0.0
+        self.cosine_similarity_risk_threshold: float = 0.8
 
     def append_semantic_similarity_result(self, semantic_similarity_result: SemanticSimilarityResult):
         self.semantic_similarity_result = semantic_similarity_result
