@@ -7,6 +7,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List
 
+from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.logging.abstract_test_run_logging_service import AbstractTestRunLoggingService
 
 
@@ -36,22 +37,18 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
     def log_results(
             self, 
             id: str,
-            prompt: str,
-            final_completion: str,
+            text_generation_completion_result: TextGenerationCompletionResult,
+            final_completion_text_score: float,
             is_rag_few_shot_enabled: bool,
             is_cot_enabled: bool,
             is_reflexion_enabled: bool,
-            original_llm_config: dict,
-            scores: List[float],
-            mean: float,
-            max: float):
+            original_llm_config: dict):
         with self._lock:
             logs = self._read_logs()
             log_entry = {
                 "id": id,
                 "timestamp": datetime.now().isoformat(),
-                "original_prompt": prompt,
-                "final_completion": final_completion,
+                "final_completion_text_score": final_completion_text_score,
                 "mitigations_enabled": {
                     "guidelines": {
                         "rag_with_few_shot_examples": is_rag_few_shot_enabled,
@@ -62,11 +59,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
                     }
                 },
                 "original_llm_config": original_llm_config,
-                "cosine_similarity": {
-                    "mean": mean,
-                    "max": max,
-                    "all_scores": scores
-                }
+                "text_generation_completion_result": text_generation_completion_result.__dict__
             }
             logs.append(log_entry)
             self._write_logs(logs)

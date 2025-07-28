@@ -57,7 +57,7 @@ class TextGenerationCompletionService(
         self.reflexion_guardrails: AbstractGeneratedTextGuardrailService = reflexion_guardrails
 
         # constants
-        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.75
+        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.8
 
         # default guidelines settings
         self._use_guidelines = False
@@ -121,8 +121,8 @@ class TextGenerationCompletionService(
         
         # update completion result with similarity scoring threshold and result
         completion_result.guidelines_result.cosine_similarity_risk_threshold = self.COSINE_SIMILARITY_RISK_THRESHOLD
-        completion_result.guidelines_result.cosine_similarity_score = similarity_result.max
-        
+        completion_result.guidelines_result.append_semantic_similarity_result(semantic_similarity_result=similarity_result)
+
         # return raw result if the completion comparison score didn't exceed threshold
         if not completion_result.guidelines_result.is_completion_malicious():
             print(f'Guidelines-based completion was NOT malicious. Score: {completion_result.guidelines_result.cosine_similarity_score}')

@@ -47,10 +47,10 @@ class TextGenerationCompletionResult(AbstractTextGenerationCompletionResult):
 
         # Check guardrails_result.completion_text next
         if (self.guardrails_result and 
-            self.guardrails_result.completion_text and
-            self.guardrails_result.completion_text.strip()
+            self.guardrails_result.guardrails_completion_text and
+            self.guardrails_result.guardrails_completion_text.strip()
         ):
-            self.final_completion_text = self.guardrails_result.completion_text
+            self.final_completion_text = self.guardrails_result.guardrails_completion_text
             print(f'Using guardrails result. Finalized text is now \"{self.final_completion_text}\"')
             return
         

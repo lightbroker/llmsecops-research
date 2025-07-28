@@ -42,7 +42,7 @@ class ReflexionSecurityGuardrailsService(
         self.llm_configuration_introspection_service = llm_configuration_introspection_service
 
         # constants
-        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.75
+        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.8
 
         # set up semantic similarity service and supporting texts
         self.example_prompt_injection_completions = prompt_injection_example_service.get_all_completions()
@@ -128,7 +128,7 @@ class ReflexionSecurityGuardrailsService(
             
             # update completion result with similarity scoring threshold and result
             result.guardrails_result.cosine_similarity_risk_threshold = self.COSINE_SIMILARITY_RISK_THRESHOLD
-            result.guardrails_result.cosine_similarity_score = similarity_result.max
+            result.guardrails_result.append_semantic_similarity_result(semantic_similarity_result=similarity_result)
 
             # return raw result if the completion comparison score didn't exceed threshold
             if not result.guardrails_result.is_completion_malicious():
