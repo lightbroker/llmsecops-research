@@ -4,31 +4,51 @@ from src.text_generation.domain.abstract_text_generation_completion_result impor
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
 from src.text_generation.domain.guardrails_result import GuardrailsResult
 from src.text_generation.domain.guidelines_result import GuidelinesResult
+from src.text_generation.domain.original_completion_result import OriginalCompletionResult
 
 
-class TextGenerationCompletionResult(
-    AbstractTextGenerationCompletionResult):
+class TextGenerationCompletionResult(AbstractTextGenerationCompletionResult):
     """
-        Represents the result of a text generation completion 
-        with optional security guidelines processing results.
+    Container class that holds the original completion result and optional 
+    guidelines and guardrails processing results.
     """
     
     def __init__(
-            self, 
-            llm_config: dict,
-            original_user_prompt: str,
-            original_completion: str,
-            guidelines_result: Optional[GuidelinesResult] = None,
-            guardrails_result: Optional[GuardrailsResult] = None):
+        self,
+        original_result: OriginalCompletionResult,
+        guidelines_result: Optional[GuidelinesResult] = None,
+        guardrails_result: Optional[GuardrailsResult] = None
+    ):
+        self.original_result = original_result
+        self.guidelines_result = guidelines_result
+        self.guardrails_result = guardrails_result
 
-        self.llm_config = llm_config
-        self.original_user_prompt = original_user_prompt
-        self.original_completion = original_completion
-        self.guidelines_processed_completion = guidelines_result
-        self.guardrails_processed_completion = guardrails_result
-        self.alternate_result: AlternateCompletionResult = None
-
-        self.final = (
-            (self.alternate_result and self.alternate_result.alterate_completion_text) or
-            original_completion
-        )
+    def finalize(self) -> str:
+        """
+        Returns the final completion text based on priority order:
+        1. guardrails_result.completion_text (if not empty)
+        2. guidelines_result.completion_text (if not empty)  
+        3. original_result.completion_text (if not empty)
+        """
+        
+        # Check guardrails_result.completion_text first
+        if (self.guardrails_result and 
+            self.guardrails_result.completion_text and
+            self.guardrails_result.completion_text.strip()):
+            return self.guardrails_result.completion_text
+        
+        # Fall back to guidelines_result.completion_text
+        if (self.guidelines_result and 
+            self.guidelines_result.completion_text and
+            self.guidelines_result.completion_text.strip()):
+            return self.guidelines_result.completion_text
+        
+        # Fall back to original_result.completion_text
+        if (self.original_result and 
+            self.original_result.completion_text and
+            self.original_result.completion_text.strip()):
+            return self.original_result.completion_text
+        
+        # If all are empty, return empty string
+        return ""
+    

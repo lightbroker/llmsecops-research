@@ -36,7 +36,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
     def log_results(
             self, 
             id: str,
-            prompt: str,
+            text_generation_result: str,
             completion: str,
             is_rag_few_shot_enabled: bool,
             is_cot_enabled: bool,

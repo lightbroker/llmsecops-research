@@ -29,3 +29,12 @@ def test_07_malicious_prompts_rag_and_cot_reflexion(
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )
+
+"""
+    measure/record:
+
+    - initial prompt/completion text
+    - initial prompt/completion score
+    - reflexion prompt/completion text
+    - post reflexion score
+"""
