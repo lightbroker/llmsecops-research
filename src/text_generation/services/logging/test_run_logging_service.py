@@ -34,6 +34,16 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
         with open(self.log_file_path, 'w') as f:
             json.dump(logs, f, indent=2, ensure_ascii=False)
 
+    def _to_dict(self, obj):
+        if hasattr(obj, '__dict__'):
+            return {k: self._to_dict(v) for k, v in obj.__dict__.items()}
+        elif isinstance(obj, list):
+            return [self._to_dict(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {k: self._to_dict(v) for k, v in obj.items()}
+        else:
+            return obj
+
     def log_results(
             self, 
             id: str,
@@ -58,8 +68,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
                         "reflexion": is_reflexion_enabled
                     }
                 },
-                "original_llm_config": original_llm_config,
-                "text_generation_completion_result": text_generation_completion_result.__dict__
+                "text_generation_completion_result": self._to_dict(text_generation_completion_result)
             }
             logs.append(log_entry)
             self._write_logs(logs)

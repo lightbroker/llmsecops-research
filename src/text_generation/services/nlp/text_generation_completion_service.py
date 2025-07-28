@@ -125,11 +125,11 @@ class TextGenerationCompletionService(
 
         # return raw result if the completion comparison score didn't exceed threshold
         if not completion_result.guidelines_result.is_completion_malicious():
-            print(f'Guidelines-based completion was NOT malicious. Score: {completion_result.guidelines_result.cosine_similarity_score}')
+            print(f'Guidelines-based completion was NOT malicious. Score: {completion_result.guidelines_result.semantic_similarity_result.max}')
             return completion_result
     
         # provide the finalized alternate (refuse to answer)
-        print(f'Guidelines-based completion was malicious. Score: {completion_result.guidelines_result.cosine_similarity_score}')
+        print(f'Guidelines-based completion was malicious. Score: {completion_result.guidelines_result.semantic_similarity_result.max}')
         completion_result.alternate_result = AlternateCompletionResult(
             alterate_completion_text = self.constants.ALT_COMPLETION_TEXT
         )
