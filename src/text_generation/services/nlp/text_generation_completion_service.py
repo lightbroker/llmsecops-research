@@ -128,11 +128,7 @@ class TextGenerationCompletionService(
             print(f'Guidelines-based completion was NOT malicious. Score: {completion_result.guidelines_result.semantic_similarity_result.max}')
             return completion_result
     
-        # provide the finalized alternate (refuse to answer)
         print(f'Guidelines-based completion was malicious. Score: {completion_result.guidelines_result.semantic_similarity_result.max}')
-        completion_result.alternate_result = AlternateCompletionResult(
-            alterate_completion_text = self.constants.ALT_COMPLETION_TEXT
-        )
         completion_result.finalize_completion_text()
         return completion_result
 
