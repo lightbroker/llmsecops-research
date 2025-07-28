@@ -65,8 +65,9 @@ class ReflexionSecurityGuardrailsService(
             "Generated Completion:",
             f"'{original_completion}'"
         ]
-        
-        return "\n".join(context_parts)
+        context = "\n".join(context_parts)
+        escaped_context = context.replace("{", "{{").replace("}", "}}")
+        return escaped_context
 
     def _get_template(self, text_generation_completion_result: AbstractTextGenerationCompletionResult) -> StringPromptTemplate:
         prompt_template: StringPromptTemplate = self.prompt_template_service.get(
