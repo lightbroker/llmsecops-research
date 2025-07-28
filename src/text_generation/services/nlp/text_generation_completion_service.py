@@ -57,7 +57,7 @@ class TextGenerationCompletionService(
         self.reflexion_guardrails: AbstractGeneratedTextGuardrailService = reflexion_guardrails
 
         # constants
-        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.5
+        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.75
 
         # default guidelines settings
         self._use_guidelines = False

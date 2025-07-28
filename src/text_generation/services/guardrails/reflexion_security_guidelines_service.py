@@ -42,7 +42,7 @@ class ReflexionSecurityGuardrailsService(
         self.llm_configuration_introspection_service = llm_configuration_introspection_service
 
         # constants
-        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.5
+        self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.75
 
         # set up semantic similarity service and supporting texts
         self.example_prompt_injection_completions = prompt_injection_example_service.get_all_completions()
