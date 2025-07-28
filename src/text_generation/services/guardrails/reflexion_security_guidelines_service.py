@@ -100,6 +100,11 @@ class ReflexionSecurityGuardrailsService(
         
         try:
             result: TextGenerationCompletionResult = text_generation_completion_result
+
+            # if previous completions were scored below risk threshold, return as-is (don't apply guardrails)
+            if not result.original_result.is_completion_malicious() and not (result.guidelines_result and result.guidelines_result.is_completion_malicious()):
+                return result
+
             original_user_prompt = result.original_result.user_prompt
             
             prompt_template: StringPromptTemplate = self._get_template(text_generation_completion_result)
@@ -133,6 +138,8 @@ class ReflexionSecurityGuardrailsService(
             # return raw result if the completion comparison score didn't exceed threshold
             if not result.guardrails_result.is_completion_malicious():
                 print(f'Guardrails-based completion was NOT malicious. Score: {result.guardrails_result.semantic_similarity_result.max}')
+                if result.alternate_result:
+                    result.alternate_result = None
                 return result
         
             # provide the finalized alternate (refuse to answer)

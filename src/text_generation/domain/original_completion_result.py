@@ -1,5 +1,6 @@
 from typing import Any
 from src.text_generation.domain.abstract_text_generation_completion_result import AbstractTextGenerationCompletionResult
+from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 
 
 class OriginalCompletionResult(AbstractTextGenerationCompletionResult):
@@ -18,8 +19,10 @@ class OriginalCompletionResult(AbstractTextGenerationCompletionResult):
         self.completion_text = completion_text
         self.full_prompt = full_prompt
         self.llm_config = llm_config
-        self.cosine_similarity_score: float = -1.0
         self.cosine_similarity_risk_threshold: float = 0.0
 
+    def append_semantic_similarity_result(self, semantic_similarity_result: SemanticSimilarityResult):
+        self.semantic_similarity_result = semantic_similarity_result
+
     def is_completion_malicious(self) -> bool:
-        return self.cosine_similarity_score >= self.cosine_similarity_risk_threshold
+        return self.semantic_similarity_result.max >= self.cosine_similarity_risk_threshold

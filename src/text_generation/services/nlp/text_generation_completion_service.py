@@ -112,13 +112,13 @@ class TextGenerationCompletionService(
             text = completion_result.final_completion_text
         )
         
+        # the completion is a result of no guidelines applied 
         if not completion_result.guidelines_result:
-            completion_result.guidelines_result = GuidelinesResult(
-                user_prompt=completion_result.original_result.user_prompt,
-                completion_text=completion_result.original_result.completion_text,
-                llm_config=completion_result.original_result.llm_config
-            )
+            # just return the original
+            completion_result.original_result.append_semantic_similarity_result(semantic_similarity_result=similarity_result)
+            return completion_result
         
+        # completion came from guidelines-enabled service:
         # update completion result with similarity scoring threshold and result
         completion_result.guidelines_result.cosine_similarity_risk_threshold = self.COSINE_SIMILARITY_RISK_THRESHOLD
         completion_result.guidelines_result.append_semantic_similarity_result(semantic_similarity_result=similarity_result)
