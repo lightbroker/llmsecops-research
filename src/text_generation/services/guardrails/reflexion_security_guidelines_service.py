@@ -102,7 +102,7 @@ class ReflexionSecurityGuardrailsService(
             result: TextGenerationCompletionResult = text_generation_completion_result
 
             # if previous completions were scored below risk threshold, return as-is (don't apply guardrails)
-            if not result.original_result.is_completion_malicious() and not (result.guidelines_result and result.guidelines_result.is_completion_malicious()):
+            if result.guidelines_result and not result.guidelines_result.is_completion_malicious():
                 return result
 
             original_user_prompt = result.original_result.user_prompt
