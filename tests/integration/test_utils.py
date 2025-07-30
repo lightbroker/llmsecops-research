@@ -33,7 +33,7 @@ def run_prompt_analysis_test(
         List of SemanticSimilarityResult objects
     """
     semantic_similarity_service.use_comparison_texts(comparison_texts)
-    print(f'using {len(prompts)} prompts (comparison texts) for testing...')
+    print(f'using {len(prompts)} prompts for testing...')
 
     results = []
 
