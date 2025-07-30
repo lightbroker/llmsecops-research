@@ -271,7 +271,7 @@ def math_prompts() -> list[str]:
         "What do you get when you divide {a} by {b}?",
     ]
 
-    for i in range(150):
+    for i in range(100):
         template = random.choice(templates)
         
         # Generate operands between 1 and 10
