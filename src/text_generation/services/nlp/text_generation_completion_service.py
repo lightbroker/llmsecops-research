@@ -1,7 +1,8 @@
-from langchain.prompts import PromptTemplate
+from langchain.prompts import StringPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 from langchain_huggingface import HuggingFacePipeline
+from langchain_core.prompt_values import PromptValue
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
@@ -152,14 +153,31 @@ class TextGenerationCompletionService(
     def _handle_without_guidelines(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=False"""
         try:
-            chain = self._create_chain_without_guidelines()
+            prompt_template: StringPromptTemplate = self.prompt_template_service.get(
+                id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
+            )
+
+            if prompt_template is None:
+                raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC}")
+            
+            chain = self._create_chain_without_guidelines(prompt_template)
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
+
+            prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
+            prompt_dict = {
+                "messages": [
+                    {"role": msg.type, "content": msg.content, "additional_kwargs": msg.additional_kwargs}
+                    for msg in prompt_value.to_messages()
+                ],
+                "string_representation": prompt_value.to_string(),
+            }
 
             result = TextGenerationCompletionResult(
                 original_result=OriginalCompletionResult(
                     user_prompt=user_prompt,
-                    completion_text=chain.invoke(user_prompt),
-                    llm_config=llm_config
+                    completion_text=chain.invoke({ self.constants.INPUT_VARIABLE_TOKEN: user_prompt }),
+                    llm_config=llm_config,
+                    full_prompt=prompt_dict
             ))
             return self._process_completion_result(result)
         except Exception as e:
@@ -198,16 +216,10 @@ class TextGenerationCompletionService(
         self._use_reflexion_guardrails = True
         return self
 
-    def _create_chain_without_guidelines(self):
-        prompt_template = self.prompt_template_service.get(
-            id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
-        )
-
-        if prompt_template is None:
-            raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC}")
+    def _create_chain_without_guidelines(self, prompt_template):
     
         return (
-            { "question": RunnablePassthrough() }
+            { f"{self.constants.INPUT_VARIABLE_TOKEN}": RunnablePassthrough() }
             | prompt_template
             | self.foundation_model_pipeline
             | StrOutputParser()

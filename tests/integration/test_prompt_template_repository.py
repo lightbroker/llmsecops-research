@@ -13,10 +13,10 @@ def test_1_save_basic_template(constants, prompt_template_service):
         template=f"""{constants.PHI_3_SYSTEM_START_TOKEN}
             Act as a conversational agent to respond to the end user's prompt. 
             {constants.PHI_3_USER_START_TOKEN}
-            Question: {{question}}{constants.PHI_3_END_TOKEN}
+            Question: {{{constants.INPUT_VARIABLE_TOKEN}}}{constants.PHI_3_END_TOKEN}
             {constants.PHI_3_ASSISTANT_START_TOKEN}
             """,
-        input_variables=["question"]
+        input_variables=[constants.INPUT_VARIABLE_TOKEN]
     )
     id = constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
     
