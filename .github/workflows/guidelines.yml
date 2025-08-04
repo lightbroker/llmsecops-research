@@ -1,0 +1,55 @@
+name: 'Generative AI Guidelines Pre-Production Test'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      
+      - name: 'set up Python'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+         
+      - name: 'set up Python dependencies'
+        shell: bash
+        run: |
+          pip install -r ${{ github.workspace }}/requirements.txt
+          
+      - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
+        shell: bash
+        run: |
+          pip install huggingface-hub[cli]
+          huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/infrastructure/foundation_model
+
+
+      - name: 'run generative AI guidelines test'
+        shell: bash  
+        run: |
+          pytest -k test__generative_ai_guidelines -s --disable-warnings
+
+          
+  # for illustrative purposes
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: build
+        shell: bash
+        run: |
+          echo "placeholder for build process"
+
+
+  # for illustrative purposes
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: deploy
+        shell: bash
+        run: |
+          echo "placeholder for deployment process"
