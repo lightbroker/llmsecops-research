@@ -1,0 +1,15 @@
+from langchain_huggingface import HuggingFaceEmbeddings
+from src.text_generation.ports.abstract_embedding_model import AbstractEmbeddingModel
+
+
+class EmbeddingModel(AbstractEmbeddingModel):
+    def __init__(self):
+        self._embeddings = HuggingFaceEmbeddings(
+            model_name='sentence-transformers/all-MiniLM-L6-v2',
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
+    
+    @property
+    def embeddings(self):
+        return self._embeddings

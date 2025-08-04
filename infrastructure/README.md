@@ -1,6 +1,6 @@
 # Infrastructure
 
-This directory exists to contain the foundation model (pre-trained generative language model).
+This directory exists to contain the foundation model (pre-trained generative language model). The foundation model files are ignored by `git`.
 
 ## Model Choice
 
