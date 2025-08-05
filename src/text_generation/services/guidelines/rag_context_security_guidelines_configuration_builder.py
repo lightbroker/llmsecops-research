@@ -65,7 +65,6 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
 
     def get_prompt_template(self, template_id: str, user_prompt: str) -> PromptTemplate:
         # Get the base template from the template service
-        template_id = self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES
         base_template = self.prompt_template_service.get(id=template_id)
         
         # Get RAG context
