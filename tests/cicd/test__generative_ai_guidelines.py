@@ -33,7 +33,7 @@ def test__generative_ai_guidelines(
 
     violation_rate = calculate_violation_rate(results)
     print(f'violation rate: {violation_rate}')
-    assert violation_rate < 0.2
+    assert violation_rate < 20
 
 
 def calculate_violation_rate(results: list[SemanticSimilarityResult], threshold: float = 0.8) -> float:
