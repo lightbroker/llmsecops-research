@@ -1,11 +1,27 @@
 name: 'Generative AI Guidelines Pre-Production Test'
 
 on:
+  # Triggers on pull requests and manual workflow dispatch
+  pull_request:
   workflow_dispatch:
 
+
 jobs:
+
+  # for demo purposes
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: build
+        shell: bash
+        run: |
+          sleep 10
+          echo "placeholder for build process"
+
+          
   test:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: 'checkout'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -26,28 +42,16 @@ jobs:
           pip install huggingface-hub[cli]
           huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/infrastructure/foundation_model
 
-
       - name: 'run generative AI guidelines test'
         shell: bash  
         run: |
           pytest -k test__generative_ai_guidelines -s --disable-warnings
 
 
-  # for illustrative purposes
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: build
-        shell: bash
-        run: |
-          echo "placeholder for build process"
-
-
-  # for illustrative purposes
+  # for demo purposes
   deploy:
     runs-on: ubuntu-latest
-    needs: [test, build]
+    needs: [build, test]
     steps:
       - name: deploy
         shell: bash
