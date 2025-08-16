@@ -6,7 +6,6 @@ from transformers import AutoTokenizer, pipeline
 from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 
 
-
 class TextGenerationFoundationModel(AbstractFoundationModel):
 
     def __init__(self):
