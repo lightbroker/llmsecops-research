@@ -4,11 +4,11 @@ from src.text_generation.adapters.foundation_models.base.base_model_pipeline imp
 from typing import Any, Dict, List
 
 
-class MetaTinyLlamaPipeline(BaseModelPipeline):
+class MetaLlamaPipeline(BaseModelPipeline):
     def get_model_specific_config(self) -> Dict[str, Any]:
         return {
             "max_new_tokens": 512,
-            # TinyLlama might need slightly different settings
+            # meta-llama/Llama-3.2-3B-Instruct might need slightly different settings
             "top_p": 0.9,  # Add nucleus sampling for better diversity
         }
 

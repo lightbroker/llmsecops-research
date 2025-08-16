@@ -1,4 +1,4 @@
-from src.text_generation.adapters.foundation_models.config.meta_tinyllama_config import MetaTinyLlamaConfig
+from src.text_generation.adapters.foundation_models.config.meta_llama_config import MetaLlamaConfig
 from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
 
 
@@ -8,13 +8,13 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.text_generation.common.model_id import ModelId
 
 
-class MetaTinyLlamaFoundationModel(BaseFoundationModel):
-    """Meta TinyLlama 1.1B implementation"""
+class MetaLlamaFoundationModel(BaseFoundationModel):
+    """meta-llama/Llama-3.2-3B-Instruct implementation"""
 
-    def __init__(self, config: MetaTinyLlamaConfig = MetaTinyLlamaConfig()):
+    def __init__(self, config: MetaLlamaConfig = MetaLlamaConfig()):
         self.config = config
         super().__init__()
-        self.MODEL_ID = ModelId.META_TINYLLAMA_1_1B_CHAT.value
+        self.MODEL_ID = ModelId.META_LLAMA_3_2_3B_INSTRUCT.value
 
     def _load_model(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(

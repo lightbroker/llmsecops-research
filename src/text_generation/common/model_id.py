@@ -2,6 +2,6 @@ from enum import Enum
 
 
 class ModelId(Enum):
-    APPLE_OPENELM_270M_INSTRUCT = "apple/openelm-270m-instruct"
-    META_TINYLLAMA_1_1B_CHAT = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    APPLE_OPENELM_3B_INSTRUCT = "apple/OpenELM-3B-Instruct"
+    META_LLAMA_3_2_3B_INSTRUCT = "meta-llama/Llama-3.2-3B-Instruct"
     MICROSOFT_PHI_3_MINI4K_INSTRUCT = "microsoft/Phi-3-mini-4k-instruct-onnx"

@@ -1,5 +1,5 @@
 from transformers import pipeline
-from langchain.llms import HuggingFacePipeline
+from langchain_huggingface import HuggingFacePipeline
 from typing import Dict, Any, List
 from abc import ABC, abstractmethod
 

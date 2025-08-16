@@ -4,7 +4,7 @@ from src.text_generation.adapters.foundation_models.base.base_model_config impor
 
 
 @dataclass
-class MetaTinyLlamaConfig(BaseModelConfig):
-    """TinyLlama-specific configuration"""
+class MetaLlamaConfig(BaseModelConfig):
+    """meta-llama/Llama-3.2-3B-Instruct configuration"""
     use_flash_attention: bool = False
     rope_scaling: Optional[Dict[str, Any]] = None

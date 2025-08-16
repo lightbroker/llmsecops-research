@@ -6,12 +6,12 @@ from src.text_generation.common.model_id import ModelId
 
 
 class AppleOpenELMFoundationModel(BaseFoundationModel):
-    """Apple OpenELM 270M implementation"""
+    """apple/OpenELM-3B-Instruct implementation"""
 
     def __init__(self, config: AppleOpenELMConfig = AppleOpenELMConfig()):
         self.config = config
         super().__init__()
-        self.MODEL_ID = ModelId.APPLE_OPENELM_270M_INSTRUCT.value
+        self.MODEL_ID = ModelId.APPLE_OPENELM_3B_INSTRUCT.value
 
     def _load_model(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(
