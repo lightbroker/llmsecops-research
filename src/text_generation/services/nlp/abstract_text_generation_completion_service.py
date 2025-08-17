@@ -21,20 +21,11 @@ class AbstractTextGenerationCompletionService(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def with_reflexion_guardrails(self) -> 'AbstractTextGenerationCompletionService':
-        """Apply security guardrails using the reflexion technique"""
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def is_chain_of_thought_enabled(self) -> bool:
         raise NotImplementedError
 
     @abc.abstractmethod
     def is_rag_context_enabled(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def is_reflexion_enabled(self) -> bool:
         raise NotImplementedError
 
     @abc.abstractmethod
