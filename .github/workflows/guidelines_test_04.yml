@@ -33,3 +33,20 @@ jobs:
         run: |
           pytest -k test_04_malicious_prompts_rag_and_cot -s --disable-warnings
 
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "42450907+lightbroker@users.noreply.github.com"
+          git config --local user.name "Adam Wilson"
+          git add .
+          git commit -m "Auto-generated files from workflow [skip ci]"
+          git push
