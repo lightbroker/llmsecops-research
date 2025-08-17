@@ -94,10 +94,6 @@ def constants():
     return Constants()
 
 @pytest.fixture(scope="session")
-def foundation_model():
-    return TextGenerationFoundationModel()
-
-@pytest.fixture(scope="session")
 def embedding_model():
     return EmbeddingModel()
 
