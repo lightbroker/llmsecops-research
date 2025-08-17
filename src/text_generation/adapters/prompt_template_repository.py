@@ -21,5 +21,5 @@ class PromptTemplateRepository(AbstractPromptTemplateRepository):
             return None
     
     def add(self, id: str, prompt_template: PromptTemplate) -> None:
-        if self.get(id) == None:
-            prompt_template.save(self._create_path_from_id(id))
+        print(f'Saving template: {id}')
+        prompt_template.save(self._create_path_from_id(id))

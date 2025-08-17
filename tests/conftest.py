@@ -18,7 +18,7 @@ from src.text_generation import config
 from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.adapters.prompt_injection_example_repository import PromptInjectionExampleRepository
 from src.text_generation.adapters.prompt_template_repository import PromptTemplateRepository
-from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
+from src.text_generation.adapters.foundation_models.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.common.constants import Constants
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
@@ -202,7 +202,6 @@ def llm_configuration_introspection_service():
 
 @pytest.fixture(scope="session")
 def text_generation_completion_service(
-        foundation_model,
         response_processing_service,
         prompt_template_service,
         chain_of_thought_guidelines,
@@ -213,7 +212,6 @@ def text_generation_completion_service(
         prompt_injection_example_service,
         llm_configuration_introspection_service):
     return TextGenerationCompletionService(
-        foundation_model=foundation_model,
         response_processing_service=response_processing_service,
         prompt_template_service=prompt_template_service,
         chain_of_thought_guidelines=chain_of_thought_guidelines,

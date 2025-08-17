@@ -1,10 +1,17 @@
+from enum import Enum
+from typing import Optional, Dict, Any
+import logging
+
 from langchain.prompts import StringPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 from langchain_huggingface import HuggingFacePipeline
 from langchain_core.prompt_values import PromptValue
 
+from src.text_generation.adapters.foundation_models.base.base_model_config import BaseModelConfig
+from src.text_generation.adapters.foundation_models.factories.foundation_model_factory import FoundationModelFactory
 from src.text_generation.common.constants import Constants
+from src.text_generation.common.model_id import ModelId
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
 from src.text_generation.domain.guidelines_result import GuidelinesResult
 from src.text_generation.domain.original_completion_result import OriginalCompletionResult
@@ -21,11 +28,12 @@ from src.text_generation.services.utilities.abstract_llm_configuration_introspec
 from src.text_generation.services.utilities.abstract_response_processing_service import AbstractResponseProcessingService
 
 
+logger = logging.getLogger(__name__)
+
 class TextGenerationCompletionService(
         AbstractTextGenerationCompletionService):
     def __init__(
             self, 
-            foundation_model: AbstractFoundationModel,
             response_processing_service: AbstractResponseProcessingService,
             prompt_template_service: AbstractPromptTemplateService,
             chain_of_thought_guidelines: AbstractSecurityGuidelinesService,
@@ -34,38 +42,47 @@ class TextGenerationCompletionService(
             reflexion_guardrails: AbstractGeneratedTextGuardrailService,
             semantic_similarity_service: AbstractSemanticSimilarityService,
             prompt_injection_example_service: AbstractPromptInjectionExampleService,
-            llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService):
+            llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
+            default_model_type: ModelId = ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT):
+        
         super().__init__()
         self.constants = Constants()
-        self.foundation_model_pipeline = foundation_model.create_pipeline()
+        
+        # Model management
+        self._current_model = None
+        self._current_model_id = None
+        self.default_model_id = default_model_type
+        self.factory = FoundationModelFactory()
+        
+        # Services
         self.response_processing_service = response_processing_service
         self.prompt_template_service = prompt_template_service
+        self.semantic_similarity_service = semantic_similarity_service
+        self.llm_configuration_introspection_service = llm_configuration_introspection_service
 
-        # set up semantic similarity service and supporting texts
+        # Set up semantic similarity service
         self.example_prompt_injection_completions = prompt_injection_example_service.get_all_completions()
         self.example_prompt_injection_prompts = prompt_injection_example_service.get_all_prompts()
-        self.semantic_similarity_service = semantic_similarity_service
         self.semantic_similarity_service.use_comparison_texts(
             self.example_prompt_injection_completions
         )
 
-        # guidelines services
-        self.chain_of_thought_guidelines: AbstractSecurityGuidelinesService = chain_of_thought_guidelines
-        self.rag_context_guidelines: AbstractSecurityGuidelinesService = rag_context_guidelines
-        self.rag_plus_cot_guidelines: AbstractSecurityGuidelinesService = rag_plus_cot_guidelines
+        # Guidelines services
+        self.chain_of_thought_guidelines = chain_of_thought_guidelines
+        self.rag_context_guidelines = rag_context_guidelines
+        self.rag_plus_cot_guidelines = rag_plus_cot_guidelines
         
-        # guardrails services
-        self.reflexion_guardrails: AbstractGeneratedTextGuardrailService = reflexion_guardrails
+        # Guardrails service
+        self.reflexion_guardrails = reflexion_guardrails
 
-        # constants
+        # Constants and settings
         self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.8
-
-        # default guidelines settings
         self._use_guidelines = False
         self._use_zero_shot_chain_of_thought = False
         self._use_rag_context = False
+        self._use_reflexion_guardrails = False
 
-        # dictionary dispatch for handling guidelines combinations
+        # Strategy map for guidelines
         self.guidelines_strategy_map = {
             (True, True):   self._handle_cot_and_rag,
             (True, False):  self._handle_cot_only,
@@ -73,11 +90,43 @@ class TextGenerationCompletionService(
             (False, False): self._handle_without_guidelines,
         }
 
-        # default guardrails settings
-        self._use_reflexion_guardrails = False
+        # Load default model
+        self.load_model(default_model_type)
 
-        # introspection for logging
-        self.llm_configuration_introspection_service = llm_configuration_introspection_service
+
+    def load_model(
+        self, 
+        model_id: ModelId, 
+        config: Optional[BaseModelConfig] = None,
+        force_reload: bool = False
+    ) -> None:
+        """Load a specific model"""
+        if (not force_reload and 
+            self._current_model is not None and 
+            self._current_model_id == model_id and
+            self._current_model.is_loaded()):
+            logger.info(f"Model {model_id.value} already loaded")
+            return
+        
+        if self._current_model is not None:
+            self._current_model.unload()
+        
+        self._current_model = self.factory.create_model(model_id, config)
+        self._current_model.load()
+        self._current_model_id: ModelId = model_id
+        self.foundation_model_pipeline = self._current_model.create_pipeline()
+        
+        logger.info(f"Successfully loaded model: {model_id.value}")
+
+    def switch_model(self, model_id: ModelId, config: Optional[BaseModelConfig] = None) -> None:
+        """Switch to a different model"""
+        self.load_model(model_id, config, force_reload=True)
+
+    def get_current_model_info(self) -> Optional[Dict[str, Any]]:
+        """Get information about the currently loaded model"""
+        if self._current_model and self._current_model.is_loaded():
+            return self._current_model.get_model_info()
+        return None
 
 
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
@@ -236,11 +285,19 @@ class TextGenerationCompletionService(
         return self._use_reflexion_guardrails
 
 
-    def invoke(self, user_prompt: str) -> TextGenerationCompletionResult:
+    def invoke(self, user_prompt: str, model_id: Optional[ModelId] = None) -> TextGenerationCompletionResult:
+        """Generate text using specified or current model"""
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
-        print(f'Using guidelines: {self.get_current_config()}')
-        completion_result: TextGenerationCompletionResult = self._process_prompt_with_guidelines_if_applicable(user_prompt)
+            
+        target_model_id = model_id or self._current_model_id or self.default_model_id
+        if (self._current_model_id != target_model_id or 
+            self._current_model is None or 
+            not self._current_model.is_loaded()):
+            self.load_model(target_model_id)
+
+        print(f'Using model: {target_model_id.value}, guidelines: {self.get_current_config()}')
+        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt)
         
         if not self._use_reflexion_guardrails:
             return completion_result
