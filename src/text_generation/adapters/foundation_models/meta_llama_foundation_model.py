@@ -11,18 +11,19 @@ from src.text_generation.common.model_id import ModelId
 class MetaLlamaFoundationModel(BaseFoundationModel):
     """meta-llama/Llama-3.2-3B-Instruct implementation"""
 
+    MODEL_ID = ModelId.META_LLAMA_3_2_3B_INSTRUCT.value
+    
     def __init__(self, config: MetaLlamaConfig = MetaLlamaConfig()):
         self.config = config
-        super().__init__()
-        self.MODEL_ID = ModelId.META_LLAMA_3_2_3B_INSTRUCT.value
+        super().__init__(config)
 
     def _load_model(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.MODEL_ID,
+            self.MODEL_ID.value,
             local_files_only=self.config.local_files_only
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.MODEL_ID,
+            self.MODEL_ID.value,
             local_files_only=self.config.local_files_only
         )
 

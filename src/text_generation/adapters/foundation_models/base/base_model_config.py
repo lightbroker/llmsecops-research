@@ -10,6 +10,4 @@ class BaseModelConfig:
     repetition_penalty: float = 1.1
     use_fast: bool = True
     local_files_only: bool = False
-
-
-
+    torch_dtype: str = "auto"

@@ -27,10 +27,10 @@ class FoundationModelFactory:
             ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT.value: MicrosoftPhi3FoundationModel
         }
 
-        if model_id not in model_map:
-            raise ValueError(f"Unsupported model type: {model_id}")
+        if model_id.value not in model_map:
+            raise ValueError(f"Unsupported model type: {model_id.value}")
 
-        return model_map[model_id](config)
+        return model_map[model_id.value](config)
     
     # Factory function to create the appropriate pipeline
     def create_model_pipeline(model_id: ModelId, model, tokenizer) -> HuggingFacePipeline:
@@ -45,12 +45,12 @@ class FoundationModelFactory:
         # Determine model type from name
         model_type = None
         for key in pipeline_classes.keys():
-            if key in model_id:
+            if key in model_id.value:
                 model_type = key
                 break
         
         if model_type is None:
-            raise ValueError(f"Unsupported model: {model_id}")
+            raise ValueError(f"Unsupported model: {model_id.value}")
         
         pipeline_class = pipeline_classes[model_type]
         return pipeline_class(model, tokenizer).create_pipeline()

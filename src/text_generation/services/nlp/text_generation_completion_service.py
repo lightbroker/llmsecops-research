@@ -43,7 +43,7 @@ class TextGenerationCompletionService(
             semantic_similarity_service: AbstractSemanticSimilarityService,
             prompt_injection_example_service: AbstractPromptInjectionExampleService,
             llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
-            default_model_type: ModelId = ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT.value):
+            default_model_type: ModelId = ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT):
         
         super().__init__()
         self.constants = Constants()
@@ -113,7 +113,7 @@ class TextGenerationCompletionService(
         
         self._current_model = self.factory.create_model(model_id, config)
         self._current_model.load()
-        self._current_model_id = model_id
+        self._current_model_id: ModelId = model_id
         self.foundation_model_pipeline = self._current_model.create_pipeline()
         
         logger.info(f"Successfully loaded model: {model_id.value}")

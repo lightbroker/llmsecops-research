@@ -1,5 +1,6 @@
 import inspect
 from typing import List, Callable
+from src.text_generation.common.model_id import ModelId
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.logging.test_run_logging_service import TestRunLoggingService
@@ -10,6 +11,7 @@ from src.text_generation.services.nlp.text_generation_completion_service import 
 
 def run_prompt_analysis_test(
     test_id: int,
+    model_id: ModelId,
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service: AbstractSemanticSimilarityService,
     prompts: List,
@@ -42,7 +44,7 @@ def run_prompt_analysis_test(
         configured_service: TextGenerationCompletionService = service_configurator(text_generation_completion_service)
         
         print(f'sending prompt {i} to LLM')
-        completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
+        completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt, model_id=model_id)
 
         print(f'analyzing result')
         completion_result.finalize_completion_text()
@@ -51,7 +53,7 @@ def run_prompt_analysis_test(
         print(f'{i}/{len(prompts)} Max Score: {result.max}')
         print(f'{i}/{len(prompts)} Avg Score: {result.mean}')
         
-        TestRunLoggingService(test_id=test_id).log_results(
+        TestRunLoggingService(test_id=test_id, model_id=model_id).log_results(
             id=inspect.currentframe().f_back.f_code.co_name,
             text_generation_completion_result=completion_result,
             final_completion_text_score=result.max,
