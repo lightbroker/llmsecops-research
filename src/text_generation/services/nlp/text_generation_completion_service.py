@@ -30,8 +30,7 @@ from src.text_generation.services.utilities.abstract_response_processing_service
 
 logger = logging.getLogger(__name__)
 
-class TextGenerationCompletionService(
-        AbstractTextGenerationCompletionService):
+class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
     def __init__(
             self, 
             response_processing_service: AbstractResponseProcessingService,
@@ -85,9 +84,87 @@ class TextGenerationCompletionService(
             (False, False): self._handle_without_guidelines,
         }
 
+        # Initialize dynamic template mapping
+        self._basic_template_mapping = self._build_basic_template_mapping()
+
         # Load default model
         self.load_model(default_model_type)
 
+    def _build_basic_template_mapping(self) -> Dict[str, str]:
+        """
+        Build mapping from model identifiers to their corresponding basic template IDs.
+        
+        Returns:
+            Dict[str, str]: Mapping from model name/identifier to basic template ID
+        """
+        return {
+            # Phi-3 models
+            "phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC,
+            "microsoft/phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC,
+            
+            # OpenELM models
+            "openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
+            "apple/openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
+            
+            # Llama models
+            "llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__01_BASIC,
+            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__01_BASIC,
+        }
+
+    def _get_model_identifier_from_model_id(self, model_id: ModelId) -> str:
+        """
+        Get model identifier string from ModelId enum.
+        
+        Args:
+            model_id: The ModelId enum value
+            
+        Returns:
+            str: Model identifier string in lowercase
+        """
+        # Extract the model name from the enum value
+        model_name = model_id.value.lower()
+        return model_name
+
+    def _get_current_model_identifier(self) -> str:
+        """
+        Get the current model identifier.
+        
+        Returns:
+            str: Current model identifier
+        """
+        if self._current_model_id:
+            return self._get_model_identifier_from_model_id(self._current_model_id)
+        
+        # Fallback: try to get from the actual model instance
+        if self._current_model and hasattr(self._current_model, 'get_model_info'):
+            model_info = self._current_model.get_model_info()
+            if model_info:
+                return str(model_info.get('model_name', '')).lower()
+        
+        return ""
+
+    def _get_basic_template_id_for_model(self, model_identifier: str) -> str:
+        """
+        Get the appropriate basic template ID for the given model.
+        
+        Args:
+            model_identifier: The model identifier/name
+            
+        Returns:
+            str: The template ID for basic prompting
+        """
+        # Try exact match first
+        if model_identifier in self._basic_template_mapping:
+            return self._basic_template_mapping[model_identifier]
+        
+        # Try partial matches for flexibility
+        for model_key, template_id in self._basic_template_mapping.items():
+            if model_key in model_identifier or model_identifier in model_key:
+                return template_id
+        
+        # Default fallback to Phi-3 if no match found
+        logger.warning(f"No basic template found for model '{model_identifier}', falling back to Phi-3 template")
+        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
 
     def load_model(
         self, 
@@ -123,7 +200,6 @@ class TextGenerationCompletionService(
             return self._current_model.get_model_info()
         return None
 
-
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
         guidelines_config = (
             self._use_zero_shot_chain_of_thought,
@@ -131,19 +207,17 @@ class TextGenerationCompletionService(
         )
         guidelines_handler = self.guidelines_strategy_map.get(
             guidelines_config,
-
             # fall back to unfiltered LLM invocation
             self._handle_without_guidelines
         )
         return guidelines_handler(user_prompt)
-
 
     def _process_completion_result(self, completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
         """
         Process guidelines result and create completion result with semantic similarity check.
         
         Args:
-            guidelines_result: Result from applying security guidelines
+            completion_result: Result from text generation
             
         Returns:
             TextGenerationCompletionResult with appropriate completion text
@@ -177,7 +251,6 @@ class TextGenerationCompletionService(
         completion_result.finalize_completion_text()
         return completion_result
 
-
     # Handler methods for each guidelines combination
     def _handle_cot_and_rag(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=True"""
@@ -195,14 +268,19 @@ class TextGenerationCompletionService(
         return self._process_completion_result(guidelines_result)
     
     def _handle_without_guidelines(self, user_prompt: str) -> TextGenerationCompletionResult:
-        """Handle: CoT=False, RAG=False"""
+        """Handle: CoT=False, RAG=False - now with dynamic template selection"""
         try:
-            prompt_template: StringPromptTemplate = self.prompt_template_service.get(
-                id=self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
-            )
+            # Get the current model identifier
+            model_identifier = self._get_current_model_identifier()
+            
+            # Get the appropriate basic template ID for this model
+            template_id = self._get_basic_template_id_for_model(model_identifier)
+            
+            # Get the template from the service
+            prompt_template: StringPromptTemplate = self.prompt_template_service.get(id=template_id)
 
             if prompt_template is None:
-                raise ValueError(f"Prompt template not found for ID: {self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC}")
+                raise ValueError(f"Prompt template not found for ID: {template_id}")
             
             chain = self._create_chain_without_guidelines(prompt_template)
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
@@ -225,6 +303,7 @@ class TextGenerationCompletionService(
             ))
             return self._process_completion_result(result)
         except Exception as e:
+            logger.error(f"Error in _handle_without_guidelines: {str(e)}")
             raise e
 
     # Configuration methods
@@ -252,9 +331,7 @@ class TextGenerationCompletionService(
         self._use_rag_context = True
         return self
 
-
     def _create_chain_without_guidelines(self, prompt_template):
-    
         return (
             { f"{self.constants.INPUT_VARIABLE_TOKEN}": RunnablePassthrough() }
             | prompt_template
@@ -269,7 +346,24 @@ class TextGenerationCompletionService(
     def is_rag_context_enabled(self) -> bool:
         return self._use_rag_context
 
+    def add_model_template_mapping(self, model_identifier: str, basic_template_id: str) -> None:
+        """
+        Add or update a model-to-basic-template mapping.
+        
+        Args:
+            model_identifier: The model identifier/name
+            basic_template_id: The corresponding basic template ID
+        """
+        self._basic_template_mapping[model_identifier.lower()] = basic_template_id
 
+    def get_supported_models(self) -> list[str]:
+        """
+        Get list of supported model identifiers for basic templates.
+        
+        Returns:
+            list[str]: List of supported model identifiers
+        """
+        return list(self._basic_template_mapping.keys())
 
     def invoke(self, user_prompt: str, model_id: Optional[ModelId] = None) -> TextGenerationCompletionResult:
         """Generate text using specified or current model"""
