@@ -39,7 +39,6 @@ class TextGenerationCompletionService(
             chain_of_thought_guidelines: AbstractSecurityGuidelinesService,
             rag_context_guidelines: AbstractSecurityGuidelinesService,
             rag_plus_cot_guidelines: AbstractSecurityGuidelinesService,
-            reflexion_guardrails: AbstractGeneratedTextGuardrailService,
             semantic_similarity_service: AbstractSemanticSimilarityService,
             prompt_injection_example_service: AbstractPromptInjectionExampleService,
             llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
@@ -71,16 +70,12 @@ class TextGenerationCompletionService(
         self.chain_of_thought_guidelines = chain_of_thought_guidelines
         self.rag_context_guidelines = rag_context_guidelines
         self.rag_plus_cot_guidelines = rag_plus_cot_guidelines
-        
-        # Guardrails service
-        self.reflexion_guardrails = reflexion_guardrails
 
         # Constants and settings
         self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.8
         self._use_guidelines = False
         self._use_zero_shot_chain_of_thought = False
         self._use_rag_context = False
-        self._use_reflexion_guardrails = False
 
         # Strategy map for guidelines
         self.guidelines_strategy_map = {
@@ -232,10 +227,6 @@ class TextGenerationCompletionService(
         except Exception as e:
             raise e
 
-    def _handle_reflexion_guardrails(self, text_generation_completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
-        result_with_guardrails_applied = self.reflexion_guardrails.apply_guardrails(text_generation_completion_result)
-        return result_with_guardrails_applied
-
     # Configuration methods
     def set_config(self, use_cot=False, use_rag=False):
         """Set guidelines configuration"""
@@ -261,9 +252,6 @@ class TextGenerationCompletionService(
         self._use_rag_context = True
         return self
 
-    def with_reflexion_guardrails(self) -> AbstractTextGenerationCompletionService:
-        self._use_reflexion_guardrails = True
-        return self
 
     def _create_chain_without_guidelines(self, prompt_template):
     
@@ -281,8 +269,6 @@ class TextGenerationCompletionService(
     def is_rag_context_enabled(self) -> bool:
         return self._use_rag_context
 
-    def is_reflexion_enabled(self) -> bool:
-        return self._use_reflexion_guardrails
 
 
     def invoke(self, user_prompt: str, model_id: Optional[ModelId] = None) -> TextGenerationCompletionResult:
@@ -297,9 +283,5 @@ class TextGenerationCompletionService(
             self.load_model(target_model_id)
 
         print(f'Using model: {target_model_id.value}, guidelines: {self.get_current_config()}')
-        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt)
-        
-        if not self._use_reflexion_guardrails:
-            return completion_result
-        
-        return self._handle_reflexion_guardrails(completion_result)
+        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt)        
+        return completion_result
