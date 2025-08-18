@@ -1,14 +1,13 @@
-name: 'Test #4 | RAG + CoT | microsoft/Phi-3-mini-4k-instruct'
+name: 'Test #4 | RAG + CoT | microsoft/Phi-3-mini-4k-instruct | Prompts 1-20'
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      # Matrix strategy to run 10 batches of 10 prompts each
+      # Matrix for batches 1-10, each testing 2 prompts (prompts 1-20 total)
       matrix:
         batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-      # Prevent all jobs from being cancelled if one fails
       fail-fast: false
     steps:
       - name: 'checkout'
@@ -24,6 +23,8 @@ jobs:
         shell: bash
         env:
           PROMPT_BATCH: ${{ matrix.batch }}
+          BATCH_SIZE: 2
+          BATCH_OFFSET: 0  # Prompts 1-20 (offset 0)
         run: pytest tests/integration/test_04_malicious_prompts_rag_and_cot_microsoft_phi_3_mini4k_instruct.py -s --disable-warnings
       - name: Check for changes
         id: verify-changed-files
@@ -39,5 +40,5 @@ jobs:
           git config --local user.email "42450907+lightbroker@users.noreply.github.com"
           git config --local user.name "Adam Wilson"
           git add .
-          git commit -m "Auto-generated files from workflow batch ${{ matrix.batch }} [skip ci]"
+          git commit -m "Auto-generated files from workflow batch ${{ matrix.batch }} (prompts 1-20) [skip ci]"
           git push

@@ -12,15 +12,27 @@ from src.text_generation.services.nlp.text_generation_completion_service import 
 
 
 def get_prompt_batch(prompts, batch_size=10, env_var='PROMPT_BATCH'):
-    """
-    Returns a batch of prompts based on the PROMPT_BATCH environment variable.
-    Prints batch info for debugging.
-    """
-    batch_num = int(os.getenv(env_var, '1'))
-    start_idx = (batch_num - 1) * batch_size
+    
+    batch_size = int(os.getenv('BATCH_SIZE', '2'))
+    batch_num = int(os.getenv('PROMPT_BATCH', '1'))
+    
+    if 'BATCH_OFFSET' in os.environ:
+        # Option 1: Fixed offset per workflow
+        offset = int(os.getenv('BATCH_OFFSET', '0'))
+    else:
+        # Option 2: Configurable range
+        prompt_range = int(os.getenv('PROMPT_RANGE', '1'))
+        offset = (prompt_range - 1) * 20
+    
+    # Calculate start and end indices
+    start_idx = offset + (batch_num - 1) * batch_size
     end_idx = min(start_idx + batch_size, len(prompts))
+    
+    # Get the subset of prompts for this batch
     prompt_subset = prompts[start_idx:end_idx]
-    print(f"Running batch {batch_num}: prompts {start_idx+1}-{end_idx} ({len(prompt_subset)} prompts)")
+    
+    print(f"Running batch {batch_num} (range offset {offset}): prompts {start_idx+1}-{end_idx} ({len(prompt_subset)} prompts)")
+    
     return prompt_subset
 
 
