@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, Dict, Any
 import logging
 
-from langchain.prompts import StringPromptTemplate
+from langchain_core.prompts import StringPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 from langchain_huggingface import HuggingFacePipeline
@@ -294,7 +294,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         guidelines_service = self._create_guidelines_service(mode, prompt_template)
         
         # Apply guidelines and process result
-        guidelines_result = guidelines_service.apply_guidelines(user_prompt)
+        guidelines_result = guidelines_service.apply_guidelines(user_prompt, template_id)
         return self._process_completion_result(guidelines_result)
 
     # Simplified handler methods
