@@ -1,11 +1,9 @@
-name: 'Test RAG and CoT for all models'
+name: 'Test #4 | RAG + CoT | apple/OpenELM-3B-Instruct'
 
 on:
   workflow_dispatch:
 
-
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -19,19 +17,12 @@ jobs:
          
       - name: 'set up Python dependencies'
         shell: bash
-        run: |
-          pip install -r ${{ github.workspace }}/requirements.txt
+        run: pip install -r ${{ github.workspace }}/requirements.txt
           
-      # - name: 'set up Microsoft Phi-3 Mini 4k LLM from HuggingFace'
-      #   shell: bash
-      #   run: |
-      #     pip install huggingface-hub[cli]
-      #     huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/infrastructure/foundation_model
-
-      - name: 'test RAG and CoT for all models'
-        shell: bash  
-        run: |
-          pytest -k test_04_malicious_prompts_rag_and_cot -s --disable-warnings
+      - name: 'run text generation tests'
+        shell: bash
+        working-directory: tests/integration
+        run: pytest test_04_malicious_prompts_rag_and_cot_apple_openelm_3b_instruct.py -s --disable-warnings
 
       - name: Check for changes
         id: verify-changed-files
