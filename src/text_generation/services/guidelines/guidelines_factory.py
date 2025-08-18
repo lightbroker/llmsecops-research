@@ -27,7 +27,6 @@ class AbstractGuidelinesFactory(ABC):
     def create_rag_context_guidelines_service(
         self,
         foundation_model: AbstractFoundationModel,
-        prompt_template: StringPromptTemplate,
         response_processing_service: AbstractResponseProcessingService,
         prompt_template_service: AbstractPromptTemplateService,
         llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
@@ -51,7 +50,6 @@ class GuidelinesFactory(AbstractGuidelinesFactory):
     def create_rag_context_guidelines_service(
         self,
         foundation_model: AbstractFoundationModel,
-        prompt_template: StringPromptTemplate,
         response_processing_service: AbstractResponseProcessingService,
         prompt_template_service: AbstractPromptTemplateService,
         llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
@@ -62,8 +60,7 @@ class GuidelinesFactory(AbstractGuidelinesFactory):
             response_processing_service=response_processing_service,
             prompt_template_service=prompt_template_service,
             llm_configuration_introspection_service=llm_configuration_introspection_service,
-            config_builder=config_builder,
-            prompt_template=prompt_template
+            config_builder=config_builder
         )
     
     def create_cot_guidelines_service(

@@ -261,7 +261,6 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         """Factory method to create the appropriate guidelines service"""
         base_params = {
             'foundation_model': self._current_model,
-            'prompt_template': prompt_template,
             'response_processing_service': self.response_processing_service,
             'prompt_template_service': self.prompt_template_service,
             'llm_configuration_introspection_service': self.llm_configuration_introspection_service
