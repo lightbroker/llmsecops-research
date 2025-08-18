@@ -17,15 +17,15 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
         self,
         embedding_model: AbstractEmbeddingModel,
         prompt_template_service: AbstractPromptTemplateService,
-        prompt_injection_example_repository: AbstractPromptInjectionExampleRepository):
-        
+        prompt_injection_example_repository: AbstractPromptInjectionExampleRepository
+    ):
         self.constants = Constants()
         self.embedding_model: EmbeddingModel = embedding_model
         self.prompt_template_service = prompt_template_service
         self.prompt_injection_example_repository = prompt_injection_example_repository
-        self.vectorstore = self._setup_vectorstore()
+        self.vectorstore = self._init_vectorstore()
 
-    def _setup_vectorstore(self):
+    def _init_vectorstore(self):
         documents = self._load_examples()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
@@ -37,7 +37,6 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
 
     def _load_examples(self):
         data = self.prompt_injection_example_repository.get_all()
-        
         documents = []
         for item in data:
             content = f"Prompt: {item['prompt_injection_prompt']}\nCompletion: {item['prompt_injection_completion']}"
@@ -49,7 +48,6 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
                 }
             )
             documents.append(doc)
-        
         return documents
 
     def _create_context(self, user_prompt: str, top_k: int = 3) -> str:
@@ -60,10 +58,10 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
         context_parts = []
         for i, doc in enumerate(context_docs, 1):
             context_parts.append(f"Example {i}:\n{doc.page_content}")
-        
         return "\n\n".join(context_parts)
 
     def get_prompt_template(self, template_id: str, user_prompt: str) -> PromptTemplate:
+        """Get the base template from the template service and fill in RAG context"""
         # Get the base template from the template service
         base_template = self.prompt_template_service.get(id=template_id)
         
@@ -75,9 +73,9 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
             input_variables=[self.constants.INPUT_VARIABLE_TOKEN],
             template=base_template.template.replace("{context}", context)
         )
-        
         return filled_template
 
     def get_formatted_prompt(self, template_id: str, user_prompt: str) -> str:
+        """Get formatted prompt with RAG context"""
         prompt_template = self.get_prompt_template(template_id, user_prompt)
         return prompt_template.format(**{self.constants.INPUT_VARIABLE_TOKEN: user_prompt})

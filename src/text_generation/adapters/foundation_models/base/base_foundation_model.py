@@ -1,12 +1,8 @@
-from src.text_generation.adapters.foundation_models.base.base_model_config import BaseModelConfig
-from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
-
-
-from transformers import pipeline
-
-
 from abc import abstractmethod
 from typing import Any
+from transformers import pipeline
+from src.text_generation.adapters.foundation_models.base.base_model_config import BaseModelConfig
+from src.text_generation.ports.abstract_foundation_model import AbstractFoundationModel
 
 
 class BaseFoundationModel(AbstractFoundationModel):
