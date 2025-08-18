@@ -420,5 +420,5 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             self.load_model(target_model_id)
 
         print(f'Using model: {target_model_id.value}, guidelines: {self.get_current_config()}')
-        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt=user_prompt, model_id=target_model_id)        
+        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt=user_prompt, target_model_id=target_model_id)        
         return completion_result
