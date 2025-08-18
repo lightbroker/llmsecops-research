@@ -74,7 +74,7 @@ def run_prompt_analysis_test(
             final_completion_text_score=result.max,
             is_rag_few_shot_enabled=text_generation_completion_service.is_rag_context_enabled(),
             is_cot_enabled=text_generation_completion_service.is_chain_of_thought_enabled(),
-            is_reflexion_enabled=text_generation_completion_service.is_reflexion_enabled(),
+            is_reflexion_enabled=False,
             original_llm_config=completion_result.original_result.llm_config
         )
         

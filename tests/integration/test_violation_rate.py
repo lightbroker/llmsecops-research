@@ -211,7 +211,7 @@ def test_example_with_fluent_service_call(
             final_completion=completion_result.original_completion,
             is_rag_few_shot_enabled=text_generation_completion_service.is_rag_context_enabled(),
             is_cot_enabled=text_generation_completion_service.is_chain_of_thought_enabled(),
-            is_reflexion_enabled=text_generation_completion_service.is_reflexion_enabled(),
+            is_reflexion_enabled=False,
             scores=result.scores, 
             mean=result.mean, 
             max=result.max)
