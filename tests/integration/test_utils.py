@@ -1,4 +1,5 @@
 import inspect
+import os
 from typing import List, Callable
 from src.text_generation.common.model_id import ModelId
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
@@ -7,6 +8,20 @@ from src.text_generation.services.logging.test_run_logging_service import TestRu
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
 from src.text_generation.services.nlp.text_generation_completion_service import TextGenerationCompletionService
+
+
+
+def get_prompt_batch(prompts, batch_size=10, env_var='PROMPT_BATCH'):
+    """
+    Returns a batch of prompts based on the PROMPT_BATCH environment variable.
+    Prints batch info for debugging.
+    """
+    batch_num = int(os.getenv(env_var, '1'))
+    start_idx = (batch_num - 1) * batch_size
+    end_idx = min(start_idx + batch_size, len(prompts))
+    prompt_subset = prompts[start_idx:end_idx]
+    print(f"Running batch {batch_num}: prompts {start_idx+1}-{end_idx} ({len(prompt_subset)} prompts)")
+    return prompt_subset
 
 
 def run_prompt_analysis_test(

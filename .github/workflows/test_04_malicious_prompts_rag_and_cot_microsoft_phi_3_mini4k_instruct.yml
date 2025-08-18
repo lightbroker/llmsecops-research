@@ -1,28 +1,30 @@
 name: 'Test #4 | RAG + CoT | microsoft/Phi-3-mini-4k-instruct'
-
 on:
   workflow_dispatch:
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      # Matrix strategy to run 10 batches of 10 prompts each
+      matrix:
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      # Prevent all jobs from being cancelled if one fails
+      fail-fast: false
     steps:
       - name: 'checkout'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      
       - name: 'set up Python'
         uses: actions/setup-python@v3
         with:
           python-version: '3.12'
-         
       - name: 'set up Python dependencies'
         shell: bash
         run: pip install -r ${{ github.workspace }}/requirements.txt
-          
-      - name: 'run text generation tests'
+      - name: 'run text generation tests - batch ${{ matrix.batch }}'
         shell: bash
+        env:
+          PROMPT_BATCH: ${{ matrix.batch }}
         run: pytest tests/integration/test_04_malicious_prompts_rag_and_cot_microsoft_phi_3_mini4k_instruct.py -s --disable-warnings
-
       - name: Check for changes
         id: verify-changed-files
         run: |
@@ -31,12 +33,11 @@ jobs:
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Commit and push changes
+      - name: Commit and push changes (batch ${{ matrix.batch }})
         if: steps.verify-changed-files.outputs.changed == 'true'
         run: |
           git config --local user.email "42450907+lightbroker@users.noreply.github.com"
           git config --local user.name "Adam Wilson"
           git add .
-          git commit -m "Auto-generated files from workflow [skip ci]"
+          git commit -m "Auto-generated files from workflow batch ${{ matrix.batch }} [skip ci]"
           git push
