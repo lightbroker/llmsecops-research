@@ -11,14 +11,17 @@ from langchain_core.prompt_values import PromptValue
 from src.text_generation.adapters.foundation_models.base.base_model_config import BaseModelConfig
 from src.text_generation.adapters.foundation_models.factories.foundation_model_factory import FoundationModelFactory
 from src.text_generation.common.constants import Constants
+from src.text_generation.common.guidelines_mode import GuidelinesMode
 from src.text_generation.common.model_id import ModelId
+from src.text_generation.common.prompt_template_type import PromptTemplateType
 from src.text_generation.domain.alternate_completion_result import AlternateCompletionResult
 from src.text_generation.domain.guidelines_result import GuidelinesResult
 from src.text_generation.domain.original_completion_result import OriginalCompletionResult
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.guardrails.abstract_generated_text_guardrail_service import AbstractGeneratedTextGuardrailService
-from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesService
+from src.text_generation.services.guidelines.abstract_security_guidelines_service import AbstractSecurityGuidelinesConfigurationBuilder, AbstractSecurityGuidelinesService
+from src.text_generation.services.guidelines.guidelines_factory import AbstractGuidelinesFactory
 from src.text_generation.services.nlp.abstract_prompt_template_service import AbstractPromptTemplateService
 from src.text_generation.services.nlp.abstract_semantic_similarity_service import AbstractSemanticSimilarityService
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
@@ -35,13 +38,13 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             self, 
             response_processing_service: AbstractResponseProcessingService,
             prompt_template_service: AbstractPromptTemplateService,
-            chain_of_thought_guidelines: AbstractSecurityGuidelinesService,
-            rag_context_guidelines: AbstractSecurityGuidelinesService,
-            rag_plus_cot_guidelines: AbstractSecurityGuidelinesService,
+            guidelines_factory: AbstractGuidelinesFactory,
+            guidelines_config_builder: AbstractSecurityGuidelinesConfigurationBuilder,
             semantic_similarity_service: AbstractSemanticSimilarityService,
             prompt_injection_example_service: AbstractPromptInjectionExampleService,
             llm_configuration_introspection_service: AbstractLLMConfigurationIntrospectionService,
-            default_model_type: ModelId = ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT):
+            default_model_type: ModelId = ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT
+    ):
         
         super().__init__()
         self.constants = Constants()
@@ -66,9 +69,8 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         )
 
         # Guidelines services
-        self.chain_of_thought_guidelines = chain_of_thought_guidelines
-        self.rag_context_guidelines = rag_context_guidelines
-        self.rag_plus_cot_guidelines = rag_plus_cot_guidelines
+        self.guidelines_factory = guidelines_factory
+        self.guidelines_config_builder = guidelines_config_builder
 
         # Constants and settings
         self.COSINE_SIMILARITY_RISK_THRESHOLD = 0.8
@@ -84,31 +86,40 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             (False, False): self._handle_without_guidelines,
         }
 
-        # Initialize dynamic template mapping
-        self._basic_template_mapping = self._build_basic_template_mapping()
-
         # Load default model
         self.load_model(default_model_type)
 
-    def _build_basic_template_mapping(self) -> Dict[str, str]:
+    def _prompt_template_map(self) -> Dict[str, Dict[str, str]]:
         """
-        Build mapping from model identifiers to their corresponding basic template IDs.
+        Build mapping from model identifiers to their corresponding template IDs for all template types.
         
         Returns:
-            Dict[str, str]: Mapping from model name/identifier to basic template ID
+            Dict[str, Dict[str, str]]: Mapping from model name/identifier to all template IDs
         """
         return {
             # Phi-3 models
-            "phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC,
-            "microsoft/phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC,
-            
+            "microsoft/phi-3-mini-4k-instruct": {
+                PromptTemplateType.BASIC.value: self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC,
+                PromptTemplateType.ZERO_SHOT_COT.value: self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
+                PromptTemplateType.FEW_SHOT.value: self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES,
+                PromptTemplateType.RAG_PLUS_COT.value: self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
+            },
+
             # OpenELM models
-            "openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
-            "apple/openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
-            
+            "apple/openelm-3b-instruct": {
+                PromptTemplateType.BASIC.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
+                PromptTemplateType.ZERO_SHOT_COT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
+                PromptTemplateType.FEW_SHOT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
+                PromptTemplateType.RAG_PLUS_COT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
+            },
+
             # Llama models
-            "llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__01_BASIC,
-            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__01_BASIC,
+            "meta-llama/llama-3.2-3b-instruct": {
+                PromptTemplateType.BASIC.value: self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__01_BASIC,
+                PromptTemplateType.ZERO_SHOT_COT.value: self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
+                PromptTemplateType.FEW_SHOT.value: self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__03_FEW_SHOT_EXAMPLES,
+                PromptTemplateType.RAG_PLUS_COT.value: self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__04_FEW_SHOT_RAG_PLUS_COT,
+            }
         }
 
     def _get_model_identifier_from_model_id(self, model_id: ModelId) -> str:
@@ -143,29 +154,6 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         
         return ""
 
-    def _get_basic_template_id_for_model(self, model_identifier: str) -> str:
-        """
-        Get the appropriate basic template ID for the given model.
-        
-        Args:
-            model_identifier: The model identifier/name
-            
-        Returns:
-            str: The template ID for basic prompting
-        """
-        # Try exact match first
-        if model_identifier in self._basic_template_mapping:
-            return self._basic_template_mapping[model_identifier]
-        
-        # Try partial matches for flexibility
-        for model_key, template_id in self._basic_template_mapping.items():
-            if model_key in model_identifier or model_identifier in model_key:
-                return template_id
-        
-        # Default fallback to Phi-3 if no match found
-        logger.warning(f"No basic template found for model '{model_identifier}', falling back to Phi-3 template")
-        return self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__01_BASIC
-
     def load_model(
         self, 
         model_id: ModelId, 
@@ -175,8 +163,8 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         """Load a specific model"""
         if (not force_reload and 
             self._current_model is not None and 
-            self._current_model_id == model_id and
-            self._current_model.is_loaded()):
+            self._current_model_id == model_id
+        ):
             logger.info(f"Model {model_id.value} already loaded")
             return
         
@@ -184,15 +172,10 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             self._current_model.unload()
         
         self._current_model = self.factory.create_model(model_id, config)
-        self._current_model.load()
         self._current_model_id: ModelId = model_id
         self.foundation_model_pipeline = self._current_model.create_pipeline()
         
         logger.info(f"Successfully loaded model: {model_id.value}")
-
-    def switch_model(self, model_id: ModelId, config: Optional[BaseModelConfig] = None) -> None:
-        """Switch to a different model"""
-        self.load_model(model_id, config, force_reload=True)
 
     def get_current_model_info(self) -> Optional[Dict[str, Any]]:
         """Get information about the currently loaded model"""
@@ -200,7 +183,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             return self._current_model.get_model_info()
         return None
 
-    def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str):
+    def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str, target_model_id: ModelId):
         guidelines_config = (
             self._use_zero_shot_chain_of_thought,
             self._use_rag_context
@@ -210,7 +193,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             # fall back to unfiltered LLM invocation
             self._handle_without_guidelines
         )
-        return guidelines_handler(user_prompt)
+        return guidelines_handler(user_prompt, target_model_id)
 
     def _process_completion_result(self, completion_result: TextGenerationCompletionResult) -> TextGenerationCompletionResult:
         """
@@ -251,40 +234,103 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         completion_result.finalize_completion_text()
         return completion_result
 
-    # Handler methods for each guidelines combination
-    def _handle_cot_and_rag(self, user_prompt: str) -> TextGenerationCompletionResult:
-        """Handle: CoT=True, RAG=True"""
-        guidelines_result = self.rag_plus_cot_guidelines.apply_guidelines(user_prompt)
+    def _get_template_for_mode(self, mode: GuidelinesMode, target_model_id: Optional[ModelId] = None) -> str:
+        """Get the appropriate template ID based on the guidelines mode and model"""
+        if target_model_id:
+            model_identifier = self._get_model_identifier_from_model_id(target_model_id)
+        else:
+            model_identifier = self._get_current_model_identifier()
+        
+        template_map = {
+            GuidelinesMode.RAG_PLUS_COT: PromptTemplateType.RAG_PLUS_COT.value,
+            GuidelinesMode.COT_ONLY: PromptTemplateType.ZERO_SHOT_COT.value,
+            GuidelinesMode.RAG_ONLY: PromptTemplateType.FEW_SHOT.value,
+            GuidelinesMode.NONE: PromptTemplateType.BASIC.value
+        }
+        
+        return self._prompt_template_map()[model_identifier][template_map[mode]]
+
+    def _ensure_model_loaded(self, target_model_id: ModelId) -> None:
+        """Ensure the correct model is loaded"""
+        if (self._current_model_id != target_model_id or 
+            self._current_model is None):
+            self.load_model(target_model_id)
+
+    def _get_prompt_template(self, template_id: str) -> StringPromptTemplate:
+        """Get and validate prompt template"""
+        prompt_template = self.prompt_template_service.get(id=template_id)
+        if prompt_template is None:
+            raise ValueError(f"Prompt template not found for ID: {template_id}")
+        return prompt_template
+
+    def _create_guidelines_service(self, mode: GuidelinesMode, prompt_template: StringPromptTemplate) -> AbstractSecurityGuidelinesService:
+        """Factory method to create the appropriate guidelines service"""
+        base_params = {
+            'foundation_model': self._current_model,
+            'prompt_template': prompt_template,
+            'response_processing_service': self.response_processing_service,
+            'prompt_template_service': self.prompt_template_service,
+            'llm_configuration_introspection_service': self.llm_configuration_introspection_service
+        }
+        
+        if mode == GuidelinesMode.RAG_PLUS_COT:
+            return self.guidelines_factory.create_rag_plus_cot_context_guidelines_service(
+                **base_params,
+                config_builder=self.guidelines_config_builder
+            )
+        elif mode == GuidelinesMode.COT_ONLY:
+            return self.guidelines_factory.create_cot_guidelines_service(
+                **base_params,
+                config_builder=self.guidelines_config_builder
+            )
+        elif mode == GuidelinesMode.RAG_ONLY:
+            return self.guidelines_factory.create_rag_context_guidelines_service(**base_params)
+        else:
+            raise ValueError(f"Unsupported guidelines mode: {mode}")
+
+    def _handle_with_guidelines(self, user_prompt: str, target_model_id: ModelId, mode: GuidelinesMode) -> TextGenerationCompletionResult:
+        """Generic handler for guidelines-based processing"""
+        # Get template ID and load template
+        template_id = self._get_template_for_mode(mode, target_model_id)
+        prompt_template = self._get_prompt_template(template_id)
+        
+        # Ensure correct model is loaded
+        self._ensure_model_loaded(target_model_id)
+        
+        # Create appropriate guidelines service
+        guidelines_service = self._create_guidelines_service(mode, prompt_template)
+        
+        # Apply guidelines and process result
+        guidelines_result = guidelines_service.apply_guidelines(user_prompt)
         return self._process_completion_result(guidelines_result)
 
-    def _handle_cot_only(self, user_prompt: str) -> TextGenerationCompletionResult:
+    # Simplified handler methods
+    def _handle_cot_and_rag(self, user_prompt: str, target_model_id: ModelId) -> TextGenerationCompletionResult:
+        """Handle: CoT=True, RAG=True"""
+        return self._handle_with_guidelines(user_prompt, target_model_id, GuidelinesMode.RAG_PLUS_COT)
+
+    def _handle_cot_only(self, user_prompt: str, target_model_id: ModelId) -> TextGenerationCompletionResult:
         """Handle: CoT=True, RAG=False"""
-        guidelines_result = self.chain_of_thought_guidelines.apply_guidelines(user_prompt)
-        return self._process_completion_result(guidelines_result)
+        return self._handle_with_guidelines(user_prompt, target_model_id, GuidelinesMode.COT_ONLY)
     
-    def _handle_rag_only(self, user_prompt: str) -> TextGenerationCompletionResult:
+    def _handle_rag_only(self, user_prompt: str, target_model_id: ModelId) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=True"""
-        guidelines_result = self.rag_context_guidelines.apply_guidelines(user_prompt)
-        return self._process_completion_result(guidelines_result)
+        return self._handle_with_guidelines(user_prompt, target_model_id, GuidelinesMode.RAG_ONLY)
     
     def _handle_without_guidelines(self, user_prompt: str) -> TextGenerationCompletionResult:
         """Handle: CoT=False, RAG=False - now with dynamic template selection"""
         try:
-            # Get the current model identifier
-            model_identifier = self._get_current_model_identifier()
+            # Get template ID and load template
+            template_id = self._get_template_for_mode(GuidelinesMode.NONE)
+            prompt_template = self._get_prompt_template(template_id)
             
-            # Get the appropriate basic template ID for this model
-            template_id = self._get_basic_template_id_for_model(model_identifier)
+            print(f'using template: {template_id}')
             
-            # Get the template from the service
-            prompt_template: StringPromptTemplate = self.prompt_template_service.get(id=template_id)
-
-            if prompt_template is None:
-                raise ValueError(f"Prompt template not found for ID: {template_id}")
-            
+            # Create chain and get config
             chain = self._create_chain_without_guidelines(prompt_template)
             llm_config = self.llm_configuration_introspection_service.get_config(chain)
 
+            # Format prompt
             prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
             prompt_dict = {
                 "messages": [
@@ -294,14 +340,17 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
                 "string_representation": prompt_value.to_string(),
             }
 
+            # Create and return result
             result = TextGenerationCompletionResult(
                 original_result=OriginalCompletionResult(
                     user_prompt=user_prompt,
-                    completion_text=chain.invoke({ self.constants.INPUT_VARIABLE_TOKEN: user_prompt }),
+                    completion_text=chain.invoke({self.constants.INPUT_VARIABLE_TOKEN: user_prompt}),
                     llm_config=llm_config,
                     full_prompt=prompt_dict
-            ))
+                )
+            )
             return self._process_completion_result(result)
+            
         except Exception as e:
             logger.error(f"Error in _handle_without_guidelines: {str(e)}")
             raise e
@@ -354,7 +403,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             model_identifier: The model identifier/name
             basic_template_id: The corresponding basic template ID
         """
-        self._basic_template_mapping[model_identifier.lower()] = basic_template_id
+        self._prompt_template_map()[model_identifier.lower()] = basic_template_id
 
     def get_supported_models(self) -> list[str]:
         """
@@ -363,7 +412,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         Returns:
             list[str]: List of supported model identifiers
         """
-        return list(self._basic_template_mapping.keys())
+        return list(self._prompt_template_map().keys())
 
     def invoke(self, user_prompt: str, model_id: Optional[ModelId] = None) -> TextGenerationCompletionResult:
         """Generate text using specified or current model"""
@@ -377,5 +426,5 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             self.load_model(target_model_id)
 
         print(f'Using model: {target_model_id.value}, guidelines: {self.get_current_config()}')
-        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt)        
+        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt=user_prompt, model_id=target_model_id)        
         return completion_result

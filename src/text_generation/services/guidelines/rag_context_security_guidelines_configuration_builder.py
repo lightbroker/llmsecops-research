@@ -17,15 +17,15 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
         self,
         embedding_model: AbstractEmbeddingModel,
         prompt_template_service: AbstractPromptTemplateService,
-        prompt_injection_example_repository: AbstractPromptInjectionExampleRepository):
-        
+        prompt_injection_example_repository: AbstractPromptInjectionExampleRepository
+    ):
         self.constants = Constants()
         self.embedding_model: EmbeddingModel = embedding_model
         self.prompt_template_service = prompt_template_service
         self.prompt_injection_example_repository = prompt_injection_example_repository
-        self.vectorstore = self._setup_vectorstore()
+        self.vectorstore = self._init_vectorstore()
 
-    def _setup_vectorstore(self):
+    def _init_vectorstore(self):
         documents = self._load_examples()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
