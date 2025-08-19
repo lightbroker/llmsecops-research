@@ -8,7 +8,7 @@ from src.text_generation.common.model_id import ModelId
 class AppleOpenELMFoundationModel(BaseFoundationModel):
     """apple/OpenELM-3B-Instruct implementation"""
 
-    MODEL_ID = ModelId.APPLE_OPENELM_3B_INSTRUCT.value
+    MODEL_ID = ModelId.APPLE_OPENELM_3B_INSTRUCT
     
     def __init__(self, config: AppleOpenELMConfig = AppleOpenELMConfig()):
         self.config = config

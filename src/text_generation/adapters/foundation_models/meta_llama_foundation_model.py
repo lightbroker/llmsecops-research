@@ -1,17 +1,14 @@
-from src.text_generation.adapters.foundation_models.config.meta_llama_config import MetaLlamaConfig
-from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
-
-
 from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
+from src.text_generation.adapters.foundation_models.config.meta_llama_config import MetaLlamaConfig
+from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
 from src.text_generation.common.model_id import ModelId
 
 
 class MetaLlamaFoundationModel(BaseFoundationModel):
     """meta-llama/Llama-3.2-3B-Instruct implementation"""
 
-    MODEL_ID = ModelId.META_LLAMA_3_2_3B_INSTRUCT.value
+    MODEL_ID = ModelId.META_LLAMA_3_2_3B_INSTRUCT
     
     def __init__(self, config: MetaLlamaConfig = MetaLlamaConfig()):
         self.config = config
