@@ -1,8 +1,15 @@
+import os
 from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.text_generation.adapters.foundation_models.config.meta_llama_config import MetaLlamaConfig
 from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
 from src.text_generation.common.model_id import ModelId
+from huggingface_hub import login
+
+if "HF_TOKEN" in os.environ:
+    login(token=os.environ["HF_TOKEN"])
+else:
+    raise ValueError("HF_TOKEN environment variable not found")
 
 
 class MetaLlamaFoundationModel(BaseFoundationModel):
