@@ -75,6 +75,7 @@ def setup_test_environment():
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["PROMPT_TEMPLATES_DIR"] = "./infrastructure/prompt_templates"
     os.environ["INJECTION_DATA_DIR"] = "./tests/security/tests/results/01_garak_no_guidelines"
+    os.environ["TEST_RUNS"] = "./tests/logs"
     os.environ["MODEL_BASE_DIR"] = "./infrastructure/foundation_model"
     os.environ["MODEL_CPU_DIR"] = "cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4"
     os.environ["MODEL_DATA_FILENAME"] = "phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx.data"
