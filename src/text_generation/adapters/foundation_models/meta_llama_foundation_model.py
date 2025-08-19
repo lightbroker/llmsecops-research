@@ -32,8 +32,8 @@ class MetaLlamaFoundationModel(BaseFoundationModel):
     def _load_model(self) -> None:
 
         files = list_repo_files(self.MODEL_ID.value)
-            for file in files:
-                print(file)
+        for file in files:
+            print(file)
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.MODEL_ID.value,
