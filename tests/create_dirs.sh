@@ -28,7 +28,7 @@ for i in {1..5}; do
         for model in "${models[@]}"; do
             # Replace / with _ and convert to lowercase for directory name
             dir_name="${model//\//_}"
-            dir_name="${dir_name,,}"  # Convert to lowercase
+            dir_name="${dir_name}"  # Convert to lowercase
             
             # Create the full directory path
             full_path="logs/test_${i}/${dir_name}/${range}"
