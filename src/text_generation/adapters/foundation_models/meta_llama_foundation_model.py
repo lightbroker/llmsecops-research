@@ -6,18 +6,18 @@ from src.text_generation.adapters.foundation_models.base.base_foundation_model i
 from src.text_generation.common.model_id import ModelId
 from huggingface_hub import login, list_repo_files
 
-if "HF_TOKEN" in os.environ:
-    hf_token = os.environ.get("HF_TOKEN", "").strip()
-    if not hf_token:
-        raise ValueError("HF_TOKEN environment variable is empty or not found")
+# if "HF_TOKEN" in os.environ:
+#     hf_token = os.environ.get("HF_TOKEN", "").strip()
+#     if not hf_token:
+#         raise ValueError("HF_TOKEN environment variable is empty or not found")
 
-    try:
-        login(token=hf_token)
-        print("Successfully authenticated with Hugging Face")
-    except Exception as e:
-        raise ValueError(f"Failed to authenticate with Hugging Face: {e}")
-else:
-    raise ValueError("HF_TOKEN environment variable not found")
+#     try:
+#         login(token=hf_token)
+#         print("Successfully authenticated with Hugging Face")
+#     except Exception as e:
+#         raise ValueError(f"Failed to authenticate with Hugging Face: {e}")
+# else:
+#     raise ValueError("HF_TOKEN environment variable not found")
 
 
 class MetaLlamaFoundationModel(BaseFoundationModel):
