@@ -168,9 +168,6 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             logger.info(f"Model {model_id.value} already loaded")
             return
         
-        if self._current_model is not None:
-            self._current_model.unload()
-        
         self._current_model = self.factory.create_model(model_id, config)
         self._current_model_id: ModelId = model_id
         self.foundation_model_pipeline = self._current_model.create_pipeline()

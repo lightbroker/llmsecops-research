@@ -1,5 +1,4 @@
 from langchain_huggingface import HuggingFacePipeline
-from optimum.onnxruntime import ORTModelForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.text_generation.adapters.foundation_models.config.microsoft_phi3mini4k_config import MicrosoftPhi3Mini4KConfig
 from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
