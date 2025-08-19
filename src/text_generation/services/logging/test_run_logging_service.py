@@ -22,7 +22,7 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
     ):
         self._lock = threading.Lock()
         timestamp = calendar.timegm(time.gmtime())
-        self.log_file_path = f"./tests/logs/test_{test_id}/{start}_{end}/{str(model_id.value).replace("/", "_")}/test_{test_id}_logs_{timestamp}.json"
+        self.log_file_path = f"./tests/logs/test_{test_id}/{str(model_id.value).replace("/", "_")}/{start}_{end}/test_{test_id}_logs_{timestamp}.json"
         self._ensure_log_file_exists()
 
     def _ensure_log_file_exists(self):
