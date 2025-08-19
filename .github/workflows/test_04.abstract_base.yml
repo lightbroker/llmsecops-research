@@ -1,16 +1,7 @@
 name: 'Reusable Test Runner | RAG + CoT | Generic'
 on:
   workflow_call:
-    secrets:
-      HF_TOKEN:
-        required: false  # Changed from true to false
-        description: 'Hugging Face authentication token'
     inputs:
-      HF_TOKEN_REQUIRED:
-        description: 'Whether HF_TOKEN is required for this workflow'
-        required: false
-        type: boolean
-        default: false
       batch_offset:
         description: 'Starting prompt index offset'
         required: true
@@ -55,37 +46,11 @@ jobs:
       - name: 'set up Python dependencies'
         shell: bash
         run: pip install -r ${{ github.workspace }}/requirements.txt
-      
-      - name: 'ensure HF_TOKEN (when required)'
-        if: ${{ inputs.HF_TOKEN_REQUIRED }}
-        shell: bash
-        run: |
-          echo "HF_TOKEN length: ${#HF_TOKEN}"
-          if [ -z "$HF_TOKEN" ]; then
-            echo "ERROR: HF_TOKEN is required but empty or not set"
-            exit 1
-          else
-            echo "HF_TOKEN is set: ${HF_TOKEN:0:3}..."
-          fi
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      
-      - name: 'check HF_TOKEN status (when not required)'
-        if: ${{ !inputs.HF_TOKEN_REQUIRED }}
-        shell: bash
-        run: |
-          if [ -z "$HF_TOKEN" ]; then
-            echo "HF_TOKEN not provided (not required for this workflow)"
-          else
-            echo "HF_TOKEN provided: ${HF_TOKEN:0:3}..."
-          fi
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
       
       - name: 'run text generation tests - ${{ inputs.model_display_name }} - range ${{ inputs.range_name }} batch ${{ matrix.batch }}'
         shell: bash
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           PROMPT_BATCH: ${{ matrix.batch }}
           BATCH_SIZE: ${{ inputs.batch_size }}
           BATCH_OFFSET: ${{ inputs.batch_offset }}
