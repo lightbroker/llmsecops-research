@@ -7,7 +7,15 @@ from src.text_generation.common.model_id import ModelId
 from huggingface_hub import login
 
 if "HF_TOKEN" in os.environ:
-    login(token=os.environ["HF_TOKEN"])
+    hf_token = os.environ.get("HF_TOKEN", "").strip()
+    if not hf_token:
+        raise ValueError("HF_TOKEN environment variable is empty or not found")
+
+    try:
+        login(token=hf_token)
+        print("Successfully authenticated with Hugging Face")
+    except Exception as e:
+        raise ValueError(f"Failed to authenticate with Hugging Face: {e}")
 else:
     raise ValueError("HF_TOKEN environment variable not found")
 

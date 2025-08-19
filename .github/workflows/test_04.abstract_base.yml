@@ -47,6 +47,19 @@ jobs:
         shell: bash
         run: pip install -r ${{ github.workspace }}/requirements.txt
       
+      - name: 'ensure HF_TOKEN'
+        shell: bash
+        run: |
+            echo "HF_TOKEN length: ${#HF_TOKEN}"
+            if [ -z "$HF_TOKEN" ]; then
+            echo "ERROR: HF_TOKEN is empty or not set"
+            exit 1
+            else
+            echo "HF_TOKEN is set (first 10 chars): ${HF_TOKEN:0:10}..."
+            fi
+        env:
+            HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
       - name: 'run text generation tests - ${{ inputs.model_display_name }} - range ${{ inputs.range_name }} batch ${{ matrix.batch }}'
         shell: bash
         env:
