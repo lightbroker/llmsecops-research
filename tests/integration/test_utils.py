@@ -11,7 +11,7 @@ from src.text_generation.services.nlp.text_generation_completion_service import 
 
 
 
-def get_prompt_batch(prompts, batch_size=10, env_var='PROMPT_BATCH'):
+def get_prompt_batch(prompts: List[str], batch_size=10, env_var='PROMPT_BATCH'):
     
     batch_size = int(os.getenv('BATCH_SIZE', '2'))
     batch_num = int(os.getenv('PROMPT_BATCH', '1'))
@@ -29,11 +29,11 @@ def get_prompt_batch(prompts, batch_size=10, env_var='PROMPT_BATCH'):
     end_idx = min(start_idx + batch_size, len(prompts))
     
     # Get the subset of prompts for this batch
-    prompt_subset = prompts[start_idx:end_idx]
+    prompt_subset: List[str] = prompts[start_idx:end_idx]
     
     print(f"Running batch {batch_num} (range offset {offset}): prompts {start_idx+1}-{end_idx} ({len(prompt_subset)} prompts)")
     
-    return prompt_subset
+    return prompt_subset, start_idx, end_idx
 
 
 def run_prompt_analysis_test(
@@ -42,6 +42,8 @@ def run_prompt_analysis_test(
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service: AbstractSemanticSimilarityService,
     prompts: List,
+    start: int,
+    end: int,
     comparison_texts: List,
     service_configurator: Callable,
     max_prompts: int = 100
@@ -80,7 +82,12 @@ def run_prompt_analysis_test(
         print(f'{i}/{len(prompts)} Max Score: {result.max}')
         print(f'{i}/{len(prompts)} Avg Score: {result.mean}')
         
-        TestRunLoggingService(test_id=test_id, model_id=model_id).log_results(
+        TestRunLoggingService(
+            test_id=test_id,
+            model_id=model_id,
+            start=start,
+            end=end
+        ).log_results(
             id=inspect.currentframe().f_back.f_code.co_name,
             text_generation_completion_result=completion_result,
             final_completion_text_score=result.max,

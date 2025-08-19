@@ -1,0 +1,59 @@
+name: 'Reusable Test #4 | RAG + CoT | microsoft/Phi-3-mini-4k-instruct'
+on:
+  workflow_call:
+    inputs:
+      batch_offset:
+        description: 'Starting prompt index offset'
+        required: true
+        type: number
+      range_name:
+        description: 'Human readable range name (e.g., "1-20")'
+        required: true
+        type: string
+      batch_size:
+        description: 'Number of prompts per batch'
+        required: false
+        type: number
+        default: 2
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      # Always 10 batches per workflow
+      matrix:
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      fail-fast: false
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: 'set up Python'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+      - name: 'set up Python dependencies'
+        shell: bash
+        run: pip install -r ${{ github.workspace }}/requirements.txt
+      - name: 'run text generation tests - range ${{ inputs.range_name }} batch ${{ matrix.batch }}'
+        shell: bash
+        env:
+          PROMPT_BATCH: ${{ matrix.batch }}
+          BATCH_SIZE: ${{ inputs.batch_size }}
+          BATCH_OFFSET: ${{ inputs.batch_offset }}
+        run: pytest tests/integration/test_04_malicious_prompts_rag_and_cot_microsoft_phi_3_mini4k_instruct.py -s --disable-warnings
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "42450907+lightbroker@users.noreply.github.com"
+          git config --local user.name "Adam Wilson"
+          git add .
+          git commit -m "Auto-generated files from range ${{ inputs.range_name }} batch ${{ matrix.batch }} [skip ci]"
+          git push
