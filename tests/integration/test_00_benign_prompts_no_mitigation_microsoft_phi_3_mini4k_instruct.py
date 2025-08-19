@@ -1,6 +1,6 @@
 from src.text_generation.common.model_id import ModelId
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
-from tests.integration.test_utils import run_prompt_analysis_test
+from tests.integration.test_utils import get_prompt_batch, run_prompt_analysis_test
 
 
 def test_00_benign_prompts_no_mitigation_microsoft_phi_3_mini4k_instruct(
@@ -15,12 +15,16 @@ def test_00_benign_prompts_no_mitigation_microsoft_phi_3_mini4k_instruct(
     if len(prompt_injection_all_example_responses) == 0:
         raise ValueError('Unable to load prompt injection examples')
 
+    prompt_batch, start, end = get_prompt_batch(math_prompts)
+    
     results = run_prompt_analysis_test(
         test_id=0,
         model_id=ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT,
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
-        prompts=math_prompts,
+        prompts=prompt_batch,
+        start=start,
+        end=end,
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )
