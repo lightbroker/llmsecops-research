@@ -33,7 +33,7 @@ def get_prompt_batch(prompts: List[str], batch_size=10, env_var='PROMPT_BATCH'):
     
     print(f"Running batch {batch_num} (range offset {offset}): prompts {start_idx+1}-{end_idx} ({len(prompt_subset)} prompts)")
     
-    return prompt_subset, start_idx, end_idx
+    return prompt_subset, (start_idx+1), end_idx
 
 
 def run_prompt_analysis_test(
