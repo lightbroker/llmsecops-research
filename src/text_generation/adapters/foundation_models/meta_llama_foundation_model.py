@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.text_generation.adapters.foundation_models.config.meta_llama_config import MetaLlamaConfig
 from src.text_generation.adapters.foundation_models.base.base_foundation_model import BaseFoundationModel
 from src.text_generation.common.model_id import ModelId
-from huggingface_hub import login
+from huggingface_hub import login, list_repo_files
 
 if "HF_TOKEN" in os.environ:
     hf_token = os.environ.get("HF_TOKEN", "").strip()
@@ -30,6 +30,11 @@ class MetaLlamaFoundationModel(BaseFoundationModel):
         super().__init__(config)
 
     def _load_model(self) -> None:
+
+        files = list_repo_files(self.MODEL_ID.value)
+            for file in files:
+                print(file)
+
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.MODEL_ID.value,
             local_files_only=self.config.local_files_only
