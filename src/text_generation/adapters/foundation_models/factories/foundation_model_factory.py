@@ -22,7 +22,7 @@ class FoundationModelFactory:
             config = BaseModelConfig()
 
         model_map = {
-            ModelId.APPLE_OPENELM_3B_INSTRUCT.value: AppleOpenELMFoundationModel,
+            ModelId.APPLE_OPENELM_1_1B_INSTRUCT.value: AppleOpenELMFoundationModel,
             ModelId.META_LLAMA_3_2_3B_INSTRUCT.value: MetaLlamaFoundationModel,
             ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT.value: MicrosoftPhi3FoundationModel
         }
@@ -37,7 +37,7 @@ class FoundationModelFactory:
         """Factory function to create the appropriate pipeline based on model name"""
         
         pipeline_classes = {
-            ModelId.APPLE_OPENELM_3B_INSTRUCT.value: AppleOpenELMPipeline,
+            ModelId.APPLE_OPENELM_1_1B_INSTRUCT.value: AppleOpenELMPipeline,
             ModelId.META_LLAMA_3_2_3B_INSTRUCT.value: MetaLlamaPipeline,
             ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT.value: MicrosoftPhi3MiniPipeline
         }

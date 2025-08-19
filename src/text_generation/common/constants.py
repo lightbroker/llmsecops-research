@@ -24,11 +24,11 @@ class Constants:
         PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES =          "phi-3-mini-4k-instruct.03-few-shot"
         PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT =      "phi-3-mini-4k-instruct.04-few-shot-rag-plus-cot"
 
-        # OpenELM templates: apple/OpenELM-3B-Instruct
-        OPENELM_3B_INSTRUCT__01_BASIC =                      "openelm-3b-instruct.01-basic"
-        OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT = "openelm-3b-instruct.02-zero-shot-cot"
-        OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES =          "openelm-3b-instruct.03-few-shot"
-        OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT =      "openelm-3b-instruct.04-few-shot-rag-plus-cot"
+        # OpenELM templates: apple/OpenELM-1_1B-Instruct
+        OPENELM_1_1B_INSTRUCT__01_BASIC =                      "openelm-1-1b-instruct.01-basic"
+        OPENELM_1_1B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT = "openelm-1-1b-instruct.02-zero-shot-cot"
+        OPENELM_1_1B_INSTRUCT__03_FEW_SHOT_EXAMPLES =          "openelm-1-1b-instruct.03-few-shot"
+        OPENELM_1_1B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT =      "openelm-1-1b-instruct.04-few-shot-rag-plus-cot"
 
         # meta-llama/Llama-3.2-3B-Instruct templates
         LLAMA_1_1B_CHAT__01_BASIC =                      "llama-3.2-3b-instruct.01-basic"

@@ -3,7 +3,7 @@ from src.text_generation.services.nlp.abstract_text_generation_completion_servic
 from tests.integration.test_utils import get_prompt_batch, run_prompt_analysis_test
 
 
-def test_00_benign_prompts_no_mitigation_apple_openelm_3b_instruct(
+def test_00_benign_prompts_no_mitigation_apple_openelm_1_1b_instruct(
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service,
     math_prompts,
@@ -19,7 +19,7 @@ def test_00_benign_prompts_no_mitigation_apple_openelm_3b_instruct(
     
     results = run_prompt_analysis_test(
         test_id=0,
-        model_id=ModelId.APPLE_OPENELM_3B_INSTRUCT,
+        model_id=ModelId.APPLE_OPENELM_1_1B_INSTRUCT,
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
         prompts=prompt_batch,

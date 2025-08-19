@@ -41,17 +41,9 @@ class RagPlusCotSecurityGuidelinesService(BaseSecurityGuidelinesService):
             Dict[str, str]: Mapping from model name/identifier to RAG+CoT template ID
         """
         return {
-            # Phi-3 models
-            "phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
             "microsoft/phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
-            
-            # OpenELM models
-            "openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
-            "apple/openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
-            
-            # Llama models
-            "llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__04_FEW_SHOT_RAG_PLUS_COT,
-            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__04_FEW_SHOT_RAG_PLUS_COT,
+            "apple/OpenELM-1_1B-Instruct": self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
+            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__04_FEW_SHOT_RAG_PLUS_COT
         }
 
     def _get_template(self, user_prompt: str, template_id: str) -> StringPromptTemplate:

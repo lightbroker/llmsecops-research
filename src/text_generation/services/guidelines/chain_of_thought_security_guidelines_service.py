@@ -38,16 +38,8 @@ class ChainOfThoughtSecurityGuidelinesService(BaseSecurityGuidelinesService):
             Dict[str, str]: Mapping from model name/identifier to CoT template ID
         """
         return {
-            # Phi-3 models
-            "phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
-            "microsoft/Phi-3-mini-4K-Instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
-            
-            # OpenELM models
-            "openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
-            "apple/OpenELM-3B-Instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
-            
-            # Llama models
-            "llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
+            "microsoft/Phi-3-mini-4K-Instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,   
+            "apple/OpenELM-1_1B-Instruct": self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
             "meta-llama/Llama-3.2-3B-Instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
         }
     

@@ -161,7 +161,7 @@ def test_4_save_rag_plus_cot_template_llama(constants, prompt_template_service):
 
 
 """
-    Model: apple/OpenELM-3B-Instruct
+    Model: apple/OpenELM-1_1B-Instruct
 """
 
 @pytest.mark.repository
@@ -175,7 +175,7 @@ def test_1_save_basic_template_apple_openelm(constants, prompt_template_service)
             ### Response: """,
         input_variables=[constants.INPUT_VARIABLE_TOKEN]
     )
-    id = constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC    
+    id = constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__01_BASIC    
     prompt_template_service.add(id, prompt_template)
 
 @pytest.mark.repository
@@ -191,7 +191,7 @@ def test_2_save_zero_shot_cot_template_apple_openelm(constants, prompt_template_
             ### Response: """,
         input_variables=[constants.INPUT_VARIABLE_TOKEN]
     )
-    id = constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT
+    id = constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT
     prompt_template_service.add(id, prompt_template)
 
 @pytest.mark.repository
@@ -209,7 +209,7 @@ def test_3_save_rag_few_shot_template_apple_openelm(constants, prompt_template_s
         template=template_string
     )
     
-    template_id = constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES
+    template_id = constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__03_FEW_SHOT_EXAMPLES
     prompt_template_service.add(template_id, prompt_template)
  
 @pytest.mark.repository
@@ -229,5 +229,5 @@ def test_4_save_rag_plus_cot_template_apple_openelm(constants, prompt_template_s
         template=template_string
     )
     
-    template_id = constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT
+    template_id = constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT
     prompt_template_service.add(template_id, prompt_template)

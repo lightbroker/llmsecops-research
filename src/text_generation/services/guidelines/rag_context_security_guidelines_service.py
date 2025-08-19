@@ -38,17 +38,9 @@ class RagContextSecurityGuidelinesService(BaseSecurityGuidelinesService):
             Dict[str, str]: Mapping from model name/identifier to few-shot template ID
         """
         return {
-            # Phi-3 models
-            "phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES,
             "microsoft/phi-3-mini-4k-instruct": self.constants.PromptTemplateIds.PHI_3_MINI_4K_INSTRUCT__03_FEW_SHOT_EXAMPLES,
-            
-            # OpenELM models
-            "openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
-            "apple/openelm-3b-instruct": self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
-            
-            # Llama models
-            "llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__03_FEW_SHOT_EXAMPLES,
-            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__03_FEW_SHOT_EXAMPLES,
+            "apple/OpenELM-1_1B-Instruct": self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
+            "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__03_FEW_SHOT_EXAMPLES
         }
 
     def _get_template(self, user_prompt: str, template_id: str) -> StringPromptTemplate:

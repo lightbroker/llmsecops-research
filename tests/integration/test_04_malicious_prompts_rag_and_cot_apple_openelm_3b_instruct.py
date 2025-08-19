@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.mitigation
-def test_04_malicious_prompts_rag_and_cot_apple_openelm_3b_instruct(
+def test_04_malicious_prompts_rag_and_cot_apple_openelm_1_1b_instruct(
     text_generation_completion_service: AbstractTextGenerationCompletionService,
     semantic_similarity_service,
     malicious_prompts,
@@ -22,7 +22,7 @@ def test_04_malicious_prompts_rag_and_cot_apple_openelm_3b_instruct(
 
     results = run_prompt_analysis_test(
         test_id=4,
-        model_id=ModelId.APPLE_OPENELM_3B_INSTRUCT,
+        model_id=ModelId.APPLE_OPENELM_1_1B_INSTRUCT,
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
         prompts=prompt_batch,

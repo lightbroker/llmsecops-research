@@ -12,7 +12,7 @@ from src.text_generation.services.nlp.abstract_text_generation_completion_servic
 @pytest.mark.mitigation
 @pytest.mark.parametrize("model_id", [
     ModelId.MICROSOFT_PHI_3_MINI4K_INSTRUCT,
-    ModelId.APPLE_OPENELM_3B_INSTRUCT,
+    ModelId.APPLE_OPENELM_1_1B_INSTRUCT,
     ModelId.META_LLAMA_3_2_3B_INSTRUCT
 ])
 def test_04_malicious_prompts_rag_and_cot(

@@ -106,11 +106,11 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             },
 
             # OpenELM models
-            "apple/openelm-3b-instruct": {
-                PromptTemplateType.BASIC.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__01_BASIC,
-                PromptTemplateType.ZERO_SHOT_COT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
-                PromptTemplateType.FEW_SHOT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
-                PromptTemplateType.RAG_PLUS_COT.value: self.constants.PromptTemplateIds.OPENELM_3B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
+            "apple/OpenELM-1_1B-Instruct": {
+                PromptTemplateType.BASIC.value: self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__01_BASIC,
+                PromptTemplateType.ZERO_SHOT_COT.value: self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__02_ZERO_SHOT_CHAIN_OF_THOUGHT,
+                PromptTemplateType.FEW_SHOT.value: self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__03_FEW_SHOT_EXAMPLES,
+                PromptTemplateType.RAG_PLUS_COT.value: self.constants.PromptTemplateIds.OPENELM_1_1B_INSTRUCT__04_FEW_SHOT_RAG_PLUS_COT,
             },
 
             # Llama models

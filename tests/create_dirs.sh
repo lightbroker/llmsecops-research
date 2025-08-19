@@ -2,7 +2,7 @@
 
 # Array of model names
 models=(
-    "apple/OpenELM-3B-Instruct"
+    "apple/OpenELM-1_1B-Instruct"
     "meta-llama/Llama-3.2-3B-Instruct"
     "microsoft/Phi-3-mini-4k-instruct"
 )
