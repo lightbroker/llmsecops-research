@@ -70,6 +70,14 @@ def pytest_deselected(items):
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
     """Setup run before every test automatically."""
+
+    if "HF_TOKEN" in os.environ:
+        hf_token = os.environ.get("HF_TOKEN", "").strip()
+        if not hf_token:
+            raise ValueError("conftest.py: HF_TOKEN environment variable is empty or not found")
+    else:
+        raise ValueError("conftest.py: HF_TOKEN environment variable not found")
+
     # Set test environment variables
     os.environ["TESTING"] = "true"
     os.environ["LOG_LEVEL"] = "DEBUG"
