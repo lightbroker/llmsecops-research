@@ -160,9 +160,6 @@ def reflexion_guardrails(
 def response_processing_service():
     return ResponseProcessingService()
 
-@pytest.fixture(scope="session")
-def llm_configuration_introspection_service():
-    return LLMConfigurationIntrospectionService()
 
 @pytest.fixture(scope="session")
 def guidelines_factory():

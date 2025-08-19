@@ -26,7 +26,7 @@ class TextGenerationCompletionResult(AbstractTextGenerationCompletionResult):
         self.alternate_result = alternate_result
         self.final_completion_text = ''
 
-    def finalize_completion_text(self) -> str:
+    def finalize_completion_text(self):
         """
         Returns the current completion text based on priority order:
         1. guardrails_result.completion_text (if not empty)

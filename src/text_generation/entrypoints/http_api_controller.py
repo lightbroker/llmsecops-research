@@ -74,12 +74,12 @@ class HttpApiController:
         configured_service = service_configurator(self.text_generation_response_service)
         result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
         
-        response_body = self.format_response(result.final)
+        response_body = self.format_response(result.final_completion_text)
         http_status_code = 200
         response_headers = [('Content-Type', 'application/json'), ('Content-Length', str(len(response_body)))]
         start_response(f'{http_status_code} OK', response_headers)
         
-        self.logging_service.log_request_response(request=prompt, response=result.final)
+        self.logging_service.log_request_response(request=prompt, response=result.final_completion_text)
         return [response_body]
 
     def handle_conversations(self, env, start_response):

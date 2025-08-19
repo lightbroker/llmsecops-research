@@ -8,5 +8,5 @@ class MetaLlamaConfig(BaseModelConfig):
     """meta-llama/Llama-3.2-3B-Instruct configuration"""
     use_flash_attention: bool = False
     rope_scaling: Optional[Dict[str, Any]] = None
-    trust_remote_code: True,
-    torch_dtype: "auto"
+    trust_remote_code = True
+    torch_dtype = "auto"

@@ -20,7 +20,7 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
         prompt_injection_example_repository: AbstractPromptInjectionExampleRepository
     ):
         self.constants = Constants()
-        self.embedding_model: EmbeddingModel = embedding_model
+        self.embedding_model = embedding_model
         self.prompt_template_service = prompt_template_service
         self.prompt_injection_example_repository = prompt_injection_example_repository
         self.vectorstore = self._init_vectorstore()
@@ -60,7 +60,7 @@ class RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
             context_parts.append(f"Example {i}:\n{doc.page_content}")
         return "\n\n".join(context_parts)
 
-    def get_prompt_template(self, template_id: str, user_prompt: str) -> PromptTemplate:
+    def get_prompt_template(self, template_id: str, user_prompt: str):
         """Get the base template from the template service and fill in RAG context"""
         # Get the base template from the template service
         base_template = self.prompt_template_service.get(id=template_id)

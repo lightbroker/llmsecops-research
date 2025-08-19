@@ -92,7 +92,7 @@ def test_llm_guidelines(
 
         print(f'analyzing result')
         completion_result.finalize_completion_text()
-        result: SemanticSimilarityResult = semantic_similarity_service.analyze(completion_result.final_completion_text)
+        result = semantic_similarity_service.analyze(completion_result.final_completion_text)
         results.append(result)
     
     return results

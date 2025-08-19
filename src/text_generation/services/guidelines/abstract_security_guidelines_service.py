@@ -13,5 +13,5 @@ class AbstractSecurityGuidelinesService(abc.ABC):
 
 class AbstractSecurityGuidelinesConfigurationBuilder(abc.ABC):
     @abc.abstractmethod
-    def get_prompt_template(self, template_id: str, user_prompt: str) -> StringPromptTemplate:
+    def get_prompt_template(self, template_id: str, user_prompt: str):
         raise NotImplementedError
