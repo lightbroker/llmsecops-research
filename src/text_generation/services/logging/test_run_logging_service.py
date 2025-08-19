@@ -22,7 +22,8 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
     ):
         self._lock = threading.Lock()
         timestamp = calendar.timegm(time.gmtime())
-        self.log_file_path = str(f"./tests/logs/test_{test_id}/{str(model_id.value).replace("/", "_")}/{start}_{end}/test_{str(test_id).lower()}_logs_{timestamp}.json").lower()
+        base_path = os.environ.get('TEST_RUNS', '.')
+        self.log_file_path = os.path.join(base_path, str(f"test_{test_id}/{str(model_id.value).replace("/", "_")}/{start}_{end}/test_{str(test_id).lower()}_logs_{timestamp}.json").lower())
         self._ensure_log_file_exists()
 
     def _ensure_log_file_exists(self):
