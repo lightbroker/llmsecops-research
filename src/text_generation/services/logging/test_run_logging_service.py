@@ -24,7 +24,12 @@ class TestRunLoggingService(AbstractTestRunLoggingService):
         timestamp = calendar.timegm(time.gmtime())
         base_path = os.environ.get('TEST_RUNS', '.')
         self.log_file_path = os.path.join(base_path, str(f"test_{test_id}/{str(model_id.value).replace("/", "_")}/{start}_{end}/test_{str(test_id).lower()}_logs_{timestamp}.json").lower())
+
+        # Ensure directory structure exists
+        os.makedirs(os.path.dirname(self.log_file_path), exist_ok=True)
+
         self._ensure_log_file_exists()
+
 
     def _ensure_log_file_exists(self):
         if not os.path.exists(self.log_file_path):
