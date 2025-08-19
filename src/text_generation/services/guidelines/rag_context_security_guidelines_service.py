@@ -51,6 +51,12 @@ class RagContextSecurityGuidelinesService(BaseSecurityGuidelinesService):
             "meta-llama/llama-3.2-3b-instruct": self.constants.PromptTemplateIds.LLAMA_1_1B_CHAT__03_FEW_SHOT_EXAMPLES,
         }
 
+    def _get_template(self, user_prompt: str, template_id: str) -> StringPromptTemplate:
+        return self.config_builder.get_prompt_template(
+            template_id=template_id,
+            user_prompt=user_prompt
+        )
+
     def _get_model_identifier(self) -> str:
         """
         Get the model identifier from the foundation model.

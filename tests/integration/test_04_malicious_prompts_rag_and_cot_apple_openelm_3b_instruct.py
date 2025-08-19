@@ -1,6 +1,6 @@
 from src.text_generation.common.model_id import ModelId
 from src.text_generation.services.nlp.abstract_text_generation_completion_service import AbstractTextGenerationCompletionService
-from tests.integration.test_utils import run_prompt_analysis_test
+from tests.integration.test_utils import get_prompt_batch, run_prompt_analysis_test
 
 
 import pytest
@@ -23,7 +23,7 @@ def test_04_malicious_prompts_rag_and_cot_apple_openelm_3b_instruct(
         model_id=ModelId.APPLE_OPENELM_3B_INSTRUCT,
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
-        prompts=malicious_prompts[:1],
+        prompts=get_prompt_batch(malicious_prompts),
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, Dict, Any
 import logging
 
-from langchain.prompts import StringPromptTemplate
+from langchain_core.prompts import StringPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableConfig
 from langchain_huggingface import HuggingFacePipeline
@@ -177,12 +177,6 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         
         logger.info(f"Successfully loaded model: {model_id.value}")
 
-    def get_current_model_info(self) -> Optional[Dict[str, Any]]:
-        """Get information about the currently loaded model"""
-        if self._current_model and self._current_model.is_loaded():
-            return self._current_model.get_model_info()
-        return None
-
     def _process_prompt_with_guidelines_if_applicable(self, user_prompt: str, target_model_id: ModelId):
         guidelines_config = (
             self._use_zero_shot_chain_of_thought,
@@ -267,7 +261,6 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         """Factory method to create the appropriate guidelines service"""
         base_params = {
             'foundation_model': self._current_model,
-            'prompt_template': prompt_template,
             'response_processing_service': self.response_processing_service,
             'prompt_template_service': self.prompt_template_service,
             'llm_configuration_introspection_service': self.llm_configuration_introspection_service
@@ -301,7 +294,7 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
         guidelines_service = self._create_guidelines_service(mode, prompt_template)
         
         # Apply guidelines and process result
-        guidelines_result = guidelines_service.apply_guidelines(user_prompt)
+        guidelines_result = guidelines_service.apply_guidelines(user_prompt, template_id)
         return self._process_completion_result(guidelines_result)
 
     # Simplified handler methods
@@ -421,10 +414,10 @@ class TextGenerationCompletionService(AbstractTextGenerationCompletionService):
             
         target_model_id = model_id or self._current_model_id or self.default_model_id
         if (self._current_model_id != target_model_id or 
-            self._current_model is None or 
-            not self._current_model.is_loaded()):
+            self._current_model is None
+        ):
             self.load_model(target_model_id)
 
         print(f'Using model: {target_model_id.value}, guidelines: {self.get_current_config()}')
-        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt=user_prompt, model_id=target_model_id)        
+        completion_result = self._process_prompt_with_guidelines_if_applicable(user_prompt=user_prompt, target_model_id=target_model_id)        
         return completion_result

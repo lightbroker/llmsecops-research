@@ -86,6 +86,12 @@ class ChainOfThoughtSecurityGuidelinesService(BaseSecurityGuidelinesService):
         except Exception:
             return ""
     
+    def _get_template(self, user_prompt: str, template_id: str) -> StringPromptTemplate:
+        return self.config_builder.get_prompt_template(
+            template_id=template_id,
+            user_prompt=user_prompt
+        )
+
     def _get_cot_template_id_for_model(self, model_identifier: str) -> str:
         """
         Get the appropriate CoT template ID for the given model.

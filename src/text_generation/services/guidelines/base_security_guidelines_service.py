@@ -3,7 +3,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, StringPromptTemplate
 from langchain_core.prompt_values import PromptValue
 from langchain_core.runnables import RunnablePassthrough
-from langchain.prompts import FewShotPromptTemplate
 
 from src.text_generation.common.constants import Constants
 from src.text_generation.domain.abstract_guidelines_processed_completion import AbstractGuidelinesProcessedCompletion
@@ -48,7 +47,7 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
             | self.response_processing_service.process_text_generation_output
         )
 
-    def _get_template(self, user_prompt: str) -> StringPromptTemplate:
+    def _get_template(self, user_prompt: str, template_id: str) -> StringPromptTemplate:
         """
         Get the prompt template for security guidelines.
         
@@ -58,13 +57,14 @@ class BaseSecurityGuidelinesService(AbstractSecurityGuidelinesService):
         raise NotImplementedError("Subclasses must implement _get_template()")
 
 
-    def apply_guidelines(self, user_prompt: str) -> AbstractGuidelinesProcessedCompletion:
+    def apply_guidelines(self, user_prompt: str, template_id: str) -> AbstractGuidelinesProcessedCompletion:
 
         if not user_prompt:
             raise ValueError(f"Parameter 'user_prompt' cannot be empty or None")
         
         try:
-            prompt_template: StringPromptTemplate = self._get_template(user_prompt=user_prompt)
+            prompt_template: StringPromptTemplate = self._get_template(user_prompt=user_prompt, template_id=template_id)
+            print(f'using prompt template: {template_id}')
             prompt_value: PromptValue = prompt_template.format_prompt(input=user_prompt)
             prompt_dict = {
                 "messages": [
