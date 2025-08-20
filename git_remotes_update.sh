@@ -1,7 +1,7 @@
 git fetch --all && git branch -r | grep 'origin/auto-generated-' | sed 's/origin\///' | xargs -I {} sh -c 'git show-ref --verify --quiet refs/heads/{} || git checkout -b {} origin/{}'
 
-git checkout development
-git pull origin development
+git checkout phi-3-only
+git pull origin phi-3-only
 
 # Merge all auto generated branches to dev
 git branch -r | grep 'origin/auto-generated-' | sed 's/origin\///' | while read branch; do
@@ -13,4 +13,4 @@ git branch -r | grep 'origin/auto-generated-' | sed 's/origin\///' | while read 
   fi
 done
 
-git push origin development
+git push origin phi-3-only
