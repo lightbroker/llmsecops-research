@@ -73,7 +73,7 @@ def run_prompt_analysis_test(
         configured_service: TextGenerationCompletionService = service_configurator(text_generation_completion_service)
         
         print(f'sending prompt {i} to LLM')
-        completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt, model_id=model_id)
+        completion_result: TextGenerationCompletionResult = configured_service.invoke(user_prompt=prompt)
 
         print(f'analyzing result')
         completion_result.finalize_completion_text()
