@@ -23,7 +23,6 @@ on:
         required: false
         type: number
         default: 2
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -35,25 +34,23 @@ jobs:
         batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       fail-fast: false
     steps:
-      - name: 'checkout'
+      - name: 'checkout from phi-3-only branch'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      
+        with:
+          ref: phi-3-only
       - name: 'set up Python'
         uses: actions/setup-python@v3
         with:
           python-version: '3.12.3'
-      
       - name: 'set up Python dependencies'
         shell: bash
         run: |
           pip install -r ${{ github.workspace }}/requirements.github_actions.txt
-          
       - name: 'set up microsoft/Phi-3-mini-4k-instruct-onnx from HuggingFace'
         shell: bash
         run: |
           pip install huggingface-hub[cli]
           huggingface-cli download microsoft/Phi-3-mini-4k-instruct-onnx --include cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/* --local-dir ${{ github.workspace }}/infrastructure/foundation_model
-      
       - name: 'run text generation tests - ${{ inputs.model_display_name }} - range ${{ inputs.range_name }} batch ${{ matrix.batch }}'
         shell: bash
         env:
@@ -61,7 +58,6 @@ jobs:
           BATCH_SIZE: ${{ inputs.batch_size }}
           BATCH_OFFSET: ${{ inputs.batch_offset }}
         run: pytest ${{ inputs.test_file_path }} -s --disable-warnings
-      
       - name: Check for changes
         id: verify-changed-files
         run: |
@@ -70,14 +66,12 @@ jobs:
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
-      
       - name: Commit and push changes
         if: steps.verify-changed-files.outputs.changed == 'true'
         run: |
           git config --local user.email "42450907+lightbroker@users.noreply.github.com"
           git config --local user.name "Adam Wilson"
           git add .
-          git add .
-          git commit -m "Auto-generated files from microsoft/Phi-3-mini-4k-instruct range 1-20 batch 4 [skip ci]"
-          git checkout -b auto-generated-$(date +%Y%m%d-%H%M%S)
+          git commit -m "Auto-generated files from microsoft/Phi-3-mini-4k-instruct range ${{ inputs.range_name }} batch ${{ matrix.batch }} [skip ci]"
+          git checkout -b auto-generated-$(date +%Y%m%d-%H%M%S)-batch-${{ matrix.batch }}
           git push origin HEAD
