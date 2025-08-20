@@ -24,14 +24,14 @@ if [ "$LOCAL" = true ]; then
 fi
 
 # the ONNX model/data require git Large File System support
-# git lfs install
+git lfs install
 
 # install Python dependencies
-# pip install -r ./requirements.txt
+pip install -r ./requirements.txt
 
 # environment variables
 
-export GARAK_PROBE='latentinjection.LatentInjectionResume'
+# export GARAK_PROBE='latentinjection.LatentInjectionResume'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnFr'
 # export GARAK_PROBE='latentinjection.LatentInjectionTranslationEnZh'
 # export GARAK_PROBE='latentinjection.LatentWhoisSnippet'
