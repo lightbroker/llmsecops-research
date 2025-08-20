@@ -18,11 +18,12 @@ from src.text_generation import config
 from src.text_generation.adapters.embedding_model import EmbeddingModel
 from src.text_generation.adapters.prompt_injection_example_repository import PromptInjectionExampleRepository
 from src.text_generation.adapters.prompt_template_repository import PromptTemplateRepository
-from src.text_generation.adapters.text_generation_foundation_model import TextGenerationFoundationModel
+from src.text_generation.adapters.foundation_models.text_generation_foundation_model import TextGenerationFoundationModel
 from src.text_generation.common.constants import Constants
 from src.text_generation.services.guardrails.generated_text_guardrail_service import GeneratedTextGuardrailService
 from src.text_generation.services.guardrails.reflexion_security_guidelines_service import ReflexionSecurityGuardrailsService
 from src.text_generation.services.guidelines.chain_of_thought_security_guidelines_service import ChainOfThoughtSecurityGuidelinesService
+from src.text_generation.services.guidelines.guidelines_factory import GuidelinesFactory
 from src.text_generation.services.guidelines.rag_context_security_guidelines_configuration_builder import RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder
 from src.text_generation.services.guidelines.rag_context_security_guidelines_service import RagContextSecurityGuidelinesService
 from src.text_generation.services.guidelines.rag_plus_cot_security_guidelines_service import RagPlusCotSecurityGuidelinesService
@@ -69,11 +70,14 @@ def pytest_deselected(items):
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
     """Setup run before every test automatically."""
+
+
     # Set test environment variables
     os.environ["TESTING"] = "true"
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["PROMPT_TEMPLATES_DIR"] = "./infrastructure/prompt_templates"
     os.environ["INJECTION_DATA_DIR"] = "./tests/security/tests/results/01_garak_no_guidelines"
+    os.environ["TEST_RUNS"] = "./tests/logs"
     os.environ["MODEL_BASE_DIR"] = "./infrastructure/foundation_model"
     os.environ["MODEL_CPU_DIR"] = "cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4"
     os.environ["MODEL_DATA_FILENAME"] = "phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx.data"
@@ -92,10 +96,6 @@ def setup_test_environment():
 @pytest.fixture(scope="session")
 def constants():
     return Constants()
-
-@pytest.fixture(scope="session")
-def foundation_model():
-    return TextGenerationFoundationModel()
 
 @pytest.fixture(scope="session")
 def embedding_model():
@@ -128,48 +128,6 @@ def rag_config_builder(
 def llm_configuration_introspection_service():
     return LLMConfigurationIntrospectionService()
 
-@pytest.fixture(scope="session")
-def rag_context_guidelines(
-        foundation_model,
-        response_processing_service,
-        prompt_template_service,
-        llm_configuration_introspection_service,
-        rag_config_builder):
-    return RagContextSecurityGuidelinesService(
-        foundation_model=foundation_model,
-        response_processing_service=response_processing_service,    
-        prompt_template_service=prompt_template_service,
-        llm_configuration_introspection_service=llm_configuration_introspection_service,
-        config_builder=rag_config_builder
-    )
-
-@pytest.fixture(scope="session")
-def chain_of_thought_guidelines(
-        foundation_model,
-        response_processing_service,
-        llm_configuration_introspection_service,
-        prompt_template_service):
-    return ChainOfThoughtSecurityGuidelinesService(
-        foundation_model=foundation_model,
-        response_processing_service=response_processing_service,
-        llm_configuration_introspection_service=llm_configuration_introspection_service,
-        prompt_template_service=prompt_template_service
-    )
-
-@pytest.fixture(scope="session")
-def rag_plus_cot_guidelines(
-        foundation_model,
-        response_processing_service,
-        prompt_template_service,
-        llm_configuration_introspection_service,
-        rag_config_builder):
-    return RagPlusCotSecurityGuidelinesService(
-        foundation_model=foundation_model,
-        response_processing_service=response_processing_service,    
-        prompt_template_service=prompt_template_service,
-        llm_configuration_introspection_service=llm_configuration_introspection_service,
-        config_builder=rag_config_builder
-    )
 
 @pytest.fixture(scope="session")
 def prompt_injection_example_service(prompt_injection_example_repository):
@@ -196,30 +154,36 @@ def reflexion_guardrails(
 def response_processing_service():
     return ResponseProcessingService()
 
+
 @pytest.fixture(scope="session")
-def llm_configuration_introspection_service():
-    return LLMConfigurationIntrospectionService()
+def guidelines_factory():
+    return GuidelinesFactory()
+
+@pytest.fixture(scope="session")
+def guidelines_config_builder(
+        embedding_model,
+        prompt_template_service,
+        prompt_injection_example_repository):
+    return RetrievalAugmentedGenerationSecurityGuidelinesConfigurationBuilder(
+        embedding_model=embedding_model,
+        prompt_template_service=prompt_template_service,
+        prompt_injection_example_repository=prompt_injection_example_repository
+    )
 
 @pytest.fixture(scope="session")
 def text_generation_completion_service(
-        foundation_model,
         response_processing_service,
         prompt_template_service,
-        chain_of_thought_guidelines,
-        rag_context_guidelines,
-        rag_plus_cot_guidelines,
-        reflexion_guardrails,
+        guidelines_factory,
+        guidelines_config_builder,
         semantic_similarity_service,
         prompt_injection_example_service,
         llm_configuration_introspection_service):
     return TextGenerationCompletionService(
-        foundation_model=foundation_model,
         response_processing_service=response_processing_service,
         prompt_template_service=prompt_template_service,
-        chain_of_thought_guidelines=chain_of_thought_guidelines,
-        rag_context_guidelines=rag_context_guidelines,
-        rag_plus_cot_guidelines=rag_plus_cot_guidelines,
-        reflexion_guardrails=reflexion_guardrails,
+        guidelines_factory=guidelines_factory,
+        guidelines_config_builder=guidelines_config_builder,
         semantic_similarity_service=semantic_similarity_service,
         prompt_injection_example_service=prompt_injection_example_service,
         llm_configuration_introspection_service=llm_configuration_introspection_service

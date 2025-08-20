@@ -7,16 +7,29 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List
 
+from src.text_generation.common.model_id import ModelId
 from src.text_generation.domain.text_generation_completion_result import TextGenerationCompletionResult
 from src.text_generation.services.logging.abstract_test_run_logging_service import AbstractTestRunLoggingService
 
 
 class TestRunLoggingService(AbstractTestRunLoggingService):
-    def __init__(self, test_id: int):
+    def __init__(
+            self, 
+            test_id: int, 
+            model_id: ModelId,
+            start: int,
+            end: int
+    ):
         self._lock = threading.Lock()
         timestamp = calendar.timegm(time.gmtime())
-        self.log_file_path = f"./tests/logs/test_{test_id}/test_{test_id}_logs_{timestamp}.json"
+        base_path = os.environ.get('TEST_RUNS', '.')
+        self.log_file_path = os.path.join(base_path, str(f"test_{test_id}/{str(model_id.value).replace("/", "_")}/{start}_{end}/test_{str(test_id).lower()}_logs_{timestamp}.json").lower())
+
+        # Ensure directory structure exists
+        os.makedirs(os.path.dirname(self.log_file_path), exist_ok=True)
+
         self._ensure_log_file_exists()
+
 
     def _ensure_log_file_exists(self):
         if not os.path.exists(self.log_file_path):
