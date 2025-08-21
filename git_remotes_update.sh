@@ -18,7 +18,7 @@ echo "performing 'git pull'"
 git pull
 
 echo -e "${BLUE}🔄 Fetching all remote branches...${NC}"
-git fetch --all
+git fetch --all --prune
 
 echo -e "${BLUE}🔍 Finding auto-generated batch branches...${NC}"
 echo
@@ -84,6 +84,8 @@ echo "$batch_branches" | while read -r branch; do
         else
             echo -e "${GREEN}✅ Successfully merged $branch${NC}"
         fi
+        echo -e "${BLUE}🗑️  Deleting remote branch ${GREEN}$branch${NC}...${NC}"
+        git push origin --delete "$branch"
     fi
 done
 
