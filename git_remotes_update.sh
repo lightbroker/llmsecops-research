@@ -60,12 +60,12 @@ echo "$batch_branches" | while read -r branch; do
 done
 
 echo
-echo -e "${BLUE}🔄 Switching to phi-3-only branch...${NC}"
-git checkout phi-3-only
-git pull origin phi-3-only
+echo -e "${BLUE}🔄 Switching to scheduled-test-runs branch...${NC}"
+git checkout scheduled-test-runs
+git pull origin scheduled-test-runs
 
 echo
-echo -e "${BLUE}🔀 Merging all batch branches into phi-3-only...${NC}"
+echo -e "${BLUE}🔀 Merging all batch branches into scheduled-test-runs...${NC}"
 
 # Merge all batch branches
 echo "$batch_branches" | while read -r branch; do
@@ -82,4 +82,4 @@ echo "$batch_branches" | while read -r branch; do
 done
 
 echo
-echo -e "${BLUE}⬆️  Pushing phi-3-only to remote...${NC}
+echo -e "${BLUE}⬆️  Pushing scheduled-test-runs to remote...${NC}
