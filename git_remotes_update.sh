@@ -11,6 +11,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+git checkout scheduled-test-runs
+
+echo
+echo "performing 'git pull'"
+git pull
+
 echo -e "${BLUE}🔄 Fetching all remote branches...${NC}"
 git fetch --all
 
@@ -82,4 +88,8 @@ echo "$batch_branches" | while read -r branch; do
 done
 
 echo
-echo -e "${BLUE}⬆️  Pushing scheduled-test-runs to remote...${NC}
+echo -e "${BLUE}⬆️  Pushing scheduled-test-runs to remote...${NC}"
+
+echo
+echo "performing 'git push'"
+git push
