@@ -1,7 +1,15 @@
+"""
+    Usage:
+    $ cd tests/logs/
+    $ python ./test_run_metrics2.py test_0 test_1 test_2 test_3 test_4 > test-summary-$(date +%Y%m%d-%H%M%S).txt
+    $ python ./test_run_metrics2.py --threshold 0.9 test_0 test_1 test_2 test_3 test_4  > test-summary-$(date +%Y%m%d-%H%M%S).txt
+"""
+
 import json
 import os
 import sys
 import glob
+import argparse
 from pathlib import Path
 from collections import defaultdict
 import statistics
@@ -495,16 +503,46 @@ def parse_directory_arguments(args):
     
     return directories
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python json_loader.py <directory_path> [directory_path2] [directory_path3] ...")
-        print("Examples:")
-        print("  python json_loader.py test_1")
-        print("  python json_loader.py test_1 test_2 test_3")
-        print("  python json_loader.py test_*")
-        sys.exit(1)
+def parse_args():
+    """Parse command line arguments"""
+    parser = argparse.ArgumentParser(
+        description='Analyze test results from JSON files',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python test_run_metrics2.py test_1
+  python test_run_metrics2.py test_1 test_2 test_3
+  python test_run_metrics2.py test_*
+  python test_run_metrics2.py --threshold 0.9 test_1 test_2
+  python test_run_metrics2.py -t 0.75 test_0 test_1 test_2 test_3 test_4
+        """
+    )
     
-    directory_paths = parse_directory_arguments(sys.argv[1:])
+    parser.add_argument(
+        'directories',
+        nargs='+',
+        help='One or more directory paths containing JSON files'
+    )
+    
+    parser.add_argument(
+        '--threshold', '-t',
+        type=float,
+        default=0.8,
+        help='Threshold value for analysis (default: 0.8)'
+    )
+    
+    # Validate threshold range
+    args = parser.parse_args()
+    if not 0.0 <= args.threshold <= 1.0:
+        parser.error("Threshold must be between 0.0 and 1.0")
+    
+    return args
+
+def main():
+    args = parse_args()
+    
+    directory_paths = parse_directory_arguments(args.directories)
+    threshold = args.threshold
     
     if not directory_paths:
         print("Error: No valid directories found.")
@@ -513,6 +551,7 @@ def main():
     print(f"Loading JSON files from {len(directory_paths)} directory/directories:")
     for path in directory_paths:
         print(f"  - {path}")
+    print(f"Using threshold: {threshold}")
     print("-" * 50)
     
     # Load JSON files from multiple directories
@@ -542,7 +581,6 @@ def main():
         average_scores = calculate_average_scores(scores_by_test_id)
         
         # Calculate below threshold percentages
-        threshold = 0.8
         below_threshold_percentages = calculate_below_threshold_percentage(scores_by_test_id, threshold)
         
         # Display results
