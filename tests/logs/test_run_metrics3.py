@@ -15,6 +15,62 @@ from collections import defaultdict
 import statistics
 import numpy as np
 from scipy import stats
+from statsmodels.stats.power import TTestIndPower
+
+def cohens_d(group1, group2):
+    """Compute Cohen's d for independent samples"""
+    n1, n2 = len(group1), len(group2)
+    if n1 < 2 or n2 < 2:
+        return float('nan')
+    s1, s2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
+    pooled_std = np.sqrt(((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2))
+    return (np.mean(group1) - np.mean(group2)) / pooled_std if pooled_std > 0 else float('nan')
+
+def compute_power(effect_size, nobs1, alpha=0.05, ratio=1.0, power=None):
+    """
+    Wrapper around statsmodels TTestIndPower
+    - If power=None: compute achieved power
+    - If power is set: compute required n
+    """
+    analysis = TTestIndPower()
+    return analysis.solve_power(effect_size=effect_size, nobs1=nobs1, alpha=alpha, ratio=ratio, power=power)
+
+def compare_mitigations(test_type_data):
+    """
+    Compare mitigation approaches:
+      - Sequentially (CoT vs NoMit, RAG vs CoT, RAG+CoT vs RAG)
+      - Against control (NoMit)
+    Returns list of tuples with (comparison, d, t, p, power).
+    """
+    comparisons = []
+    order = ["test_1", "test_2", "test_3", "test_4"]  # malicious only
+    names = {
+        "test_1": "No Mitigation",
+        "test_2": "CoT",
+        "test_3": "RAG",
+        "test_4": "RAG+CoT"
+    }
+
+    def run_comparison(label, g1, g2):
+        d = cohens_d(g1, g2)
+        # Independent t-test (Welch’s, not assuming equal variances)
+        t_stat, p_val = stats.ttest_ind(g1, g2, equal_var=False)
+        # Power analysis
+        power = compute_power(abs(d), len(g1)) if not np.isnan(d) else float('nan')
+        return (label, d, t_stat, p_val, power)
+
+    # sequential comparisons
+    for i in range(1, len(order)):
+        g1, g2 = test_type_data[order[i-1]]['scores'], test_type_data[order[i]]['scores']
+        comparisons.append(run_comparison(f"{names[order[i]]} vs {names[order[i-1]]}", g1, g2))
+
+    # vs control (test_1 = no mitigation)
+    control = test_type_data["test_1"]['scores']
+    for i in range(2, len(order)):
+        g = test_type_data[order[i]]['scores']
+        comparisons.append(run_comparison(f"{names[order[i]]} vs Control", control, g))
+
+    return comparisons
 
 def load_json_files(directory_paths):
     """Load JSON files from one or more directories, including nested structures"""
@@ -332,6 +388,8 @@ def parse_test_characteristics_from_type(test_type):
 def create_dashboard_table(test_tracking, average_scores, below_threshold_percentages, loaded_data, confidence_intervals_by_type, threshold=0.8, confidence=0.95):
     """Create the formatted dashboard table with confidence intervals"""
     
+    MAX_SAMPLE = 3250
+
     # Group data by test type instead of individual files
     test_type_data = defaultdict(lambda: {
         'scores': [],
@@ -351,6 +409,18 @@ def create_dashboard_table(test_tracking, average_scores, below_threshold_percen
                     score = item['final_completion_text_score']
                     test_type_data[test_type]['scores'].append(score)
     
+    # Apply sample size cap for each test group
+    for test_type, type_info in test_type_data.items():
+        scores = type_info['scores']
+        if len(scores) > MAX_SAMPLE:
+            # Option 1: truncate
+            # type_info['scores'] = scores[:MAX_SAMPLE]
+
+            # Option 2: random subsample (better, avoids order bias)
+            rng = np.random.default_rng(seed=42)  # fixed seed for reproducibility
+            type_info['scores'] = rng.choice(scores, size=MAX_SAMPLE, replace=False).tolist()
+
+
     # Create test data for dashboard
     test_data = []
     total_json_files = len(loaded_data)
@@ -442,7 +512,18 @@ def create_dashboard_table(test_tracking, average_scores, below_threshold_percen
         print(f"Total Tests (JSON files): {total_json_files}")
         print(f"Average Score: {overall_avg:.4f}")
         print("No mitigation tests found for performance comparison.")
-    
+
+
+    # Effect size, significance, and power analysis
+    print("\nEFFECT SIZE, SIGNIFICANCE & POWER ANALYSIS")
+    print("=" * 65)
+    comparisons = compare_mitigations(test_type_data)
+    print(f"{'Comparison':<30} {'Cohen d':>14} {'t':>8} {'p':>10} {'Power':>10}")
+    print(f"{'':<30} {'(rounded / exact)':>14}")
+    for name, d, t_stat, p_val, power in comparisons:
+        d_str = f"{round(d, 1):.1f} / {d:.3f}" if not np.isnan(d) else "N/A"
+        print(f"{name:<30} {d_str:>14} {t_stat:8.3f} {p_val:10.4f} {power:10.3f}")
+
     # Test breakdown by JSON files
     print(f"\nTest Breakdown (JSON files per test type):")
     for test in test_data:
