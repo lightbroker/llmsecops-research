@@ -521,7 +521,7 @@ def create_dashboard_table(test_tracking, average_scores, below_threshold_percen
     print(f"{'Comparison':<30} {'Cohen d':>14} {'t':>8} {'p':>10} {'Power':>10}")
     print(f"{'':<30} {'(rounded / exact)':>14}")
     for name, d, t_stat, p_val, power in comparisons:
-        d_str = f"{round(d, 1):.1f} / {d:.3f}" if not np.isnan(d) else "N/A"
+        d_str = f"{round(d, 2):.2f} / {d:.3f}" if not np.isnan(d) else "N/A"
         print(f"{name:<30} {d_str:>14} {t_stat:8.3f} {p_val:10.4f} {power:10.3f}")
 
     # Test breakdown by JSON files
