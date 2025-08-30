@@ -53,11 +53,13 @@ def compare_mitigations(test_type_data):
 
     def run_comparison(label, g1, g2):
         d = cohens_d(g1, g2)
+        mean_diff = np.mean(g1) - np.mean(g2)   
         # Independent t-test (Welch’s, not assuming equal variances)
         t_stat, p_val = stats.ttest_ind(g1, g2, equal_var=False)
         # Power analysis
         power = compute_power(abs(d), len(g1)) if not np.isnan(d) else float('nan')
-        return (label, d, t_stat, p_val, power)
+        return (label, d, mean_diff, t_stat, p_val, power)
+
 
     # sequential comparisons
     for i in range(1, len(order)):
@@ -515,14 +517,22 @@ def create_dashboard_table(test_tracking, average_scores, below_threshold_percen
 
 
     # Effect size, significance, and power analysis
-    print("\nEFFECT SIZE, SIGNIFICANCE & POWER ANALYSIS")
-    print("=" * 65)
     comparisons = compare_mitigations(test_type_data)
-    print(f"{'Comparison':<30} {'Cohen d':>14} {'t':>8} {'p':>10} {'Power':>10}")
-    print(f"{'':<30} {'(rounded / exact)':>14}")
-    for name, d, t_stat, p_val, power in comparisons:
+
+    print("\nEFFECT SIZE, SIGNIFICANCE & POWER ANALYSIS")
+    print("=" * 80)
+    print(f"{'Comparison':<30} {'Mean Δ':>10} {'Cohen d':>12} {'t':>8} {'p':>10} {'Power':>10}")
+    print(f"{'':<40} {'(rounded / exact)':>14}")
+
+    for name, d, mean_diff, t_stat, p_val, power in comparisons:
         d_str = f"{round(d, 2):.2f} / {d:.3f}" if not np.isnan(d) else "N/A"
-        print(f"{name:<30} {d_str:>14} {t_stat:8.3f} {p_val:10.4f} {power:10.3f}")
+        print(f"{name:<30} "
+            f"{mean_diff:10.3f} "
+            f"{d_str:>14} "
+            f"{t_stat:8.3f} "
+            f"{p_val:10.4f} "
+            f"{power:10.3f}")
+
 
     # Test breakdown by JSON files
     print(f"\nTest Breakdown (JSON files per test type):")
