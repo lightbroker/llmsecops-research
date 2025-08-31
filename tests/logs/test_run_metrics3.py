@@ -390,7 +390,7 @@ def parse_test_characteristics_from_type(test_type):
 def create_dashboard_table(test_tracking, average_scores, below_threshold_percentages, loaded_data, confidence_intervals_by_type, threshold=0.8, confidence=0.95):
     """Create the formatted dashboard table with confidence intervals"""
     
-    MAX_SAMPLE = 3250
+    MAX_SAMPLE = 2500
 
     # Group data by test type instead of individual files
     test_type_data = defaultdict(lambda: {
