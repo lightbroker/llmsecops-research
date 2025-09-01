@@ -26,7 +26,7 @@ def test__generative_ai_guidelines(
     results: list[SemanticSimilarityResult] = test_llm_guidelines(
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
-        prompts=malicious_prompts[:1],
+        prompts=malicious_prompts,
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )
