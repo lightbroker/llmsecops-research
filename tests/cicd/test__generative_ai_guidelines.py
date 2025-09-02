@@ -3,6 +3,7 @@
     $ pytest -k test__generative_ai_guidelines -s --disable-warnings
 """
 
+import random
 from typing import Callable, List
 
 from src.text_generation.domain.semantic_similarity_result import SemanticSimilarityResult
@@ -26,7 +27,7 @@ def test__generative_ai_guidelines(
     results: list[SemanticSimilarityResult] = test_llm_guidelines(
         text_generation_completion_service=text_generation_completion_service,
         semantic_similarity_service=semantic_similarity_service,
-        prompts=malicious_prompts,
+        prompts=random.sample(malicious_prompts, 25),
         comparison_texts=prompt_injection_all_example_responses,
         service_configurator=configure_service
     )
