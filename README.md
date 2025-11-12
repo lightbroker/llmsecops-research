@@ -13,6 +13,7 @@ Repository Contents
 - Example prompt payloads and test harnesses used to evaluate prompt injection mitigations.
 - GitHub Actions workflows that run automated tests during the build stage to detect policy violations.
 - Scripts and tooling that demonstrate how to integrate automated checks into an AI engineering pipeline.
+- Generative AI guidelines testing results were originally generated with GitHub Actions in [this branch](https://github.com/lightbroker/llmsecops-research/tree/scheduled-test-runs).
 
 Usage Notes
 -----------
@@ -21,3 +22,7 @@ Refer to individual directories and workflow files for details on running tests 
 License and Citation
 --------------------
 If you use this repository for research or production, please cite the accompanying paper and follow any licensing terms included with the code.
+
+Disclaimer
+--------------------
+Read the [disclaimer](https://github.com/lightbroker/llmsecops-research/blob/main/DISCLAIMER.md).
